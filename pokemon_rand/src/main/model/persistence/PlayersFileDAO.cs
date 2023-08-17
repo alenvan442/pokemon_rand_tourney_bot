@@ -27,7 +27,7 @@ namespace pokemon_rand.src.main.model.persistence
         /// </summary>
         /// <param name="member"> The discord member to add </param>
         /// <returns> A boolean to indicate whether or not the player was successfully created </returns>
-        public Boolean addPlayer(DiscordMember member)
+        public bool addPlayer(DiscordMember member)
         {
             //Checks to see if the UID is already in the system
             if (this.data.TryGetValue(member.Id, out _))

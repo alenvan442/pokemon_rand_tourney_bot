@@ -2,7 +2,6 @@ using System;
 using DSharpPlus.Entities;
 using pokemon_rand.src.main.model.persistence;
 using pokemon_rand.src.main.model.structures;
-using pokemon_rand.src.main.controller;
 using pokemon_rand_tourney_bot.pokemon_rand.src.main.model.persistence;
 
 namespace pokemon_rand.src.main.controller
@@ -45,23 +44,49 @@ namespace pokemon_rand.src.main.controller
             return playersFileDAO.joinTournament(member, tourneyId);
         }
 
-        public bool rollSix(DiscordMember member, ulong tourneyId) {
+        public bool rollSix(DiscordMember member) {
             Player curr = playersFileDAO.getObject(member.Id);
-            if (curr.tournaments.Contains(tourneyId) && curr.teamRolls[tourneyId] <= 0) {
+            ulong tourneyId = curr.currentTournamentId;
+            if (tourneyId == 0 || curr.teamRolls[tourneyId] <= 0) {
                 return false;
             } 
             List<Pokemon> newTeam = pokemonDAO.rollSix(member.Id);
-            return curr.rollTeam(tourneyId, newTeam);
+            return curr.rollTeam(newTeam);
         }
 
-        public bool rollSingle(DiscordMember member, ulong tourneyId, int selection) {
+        public bool rollSingle(DiscordMember member, int selection) {
             Player curr = playersFileDAO.getObject(member.Id);
-            if (!curr.tournaments.Contains(tourneyId) || curr.singleRolls[tourneyId] <= 0) {
+            ulong tourneyId = curr.currentTournamentId;
+            if (tourneyId == 0 || curr.singleRolls[tourneyId] <= 0) {
                 return false;
             }
             ulong oldId = curr.pokemon[tourneyId][selection];
             Pokemon newMon = pokemonDAO.rollOne(tourneyId, oldId, pokemonDAO.getMany(curr.pokemon[tourneyId]));
-            return curr.rollSingle(tourneyId, oldId, newMon);
+            return curr.rollSingle(oldId, newMon);
+        }
+
+        public bool leaveTournament(DiscordMember member, ulong tourneyId) {
+            Player curr = playersFileDAO.getObject(member.Id);
+            return curr.leaveTournament(tourneyId);
+        }
+
+        public List<Pokemon> viewTeam(DiscordMember caller, DiscordMember other = null) {
+            Player curr = this.playersFileDAO.getObject(caller.Id);
+            Player toView;
+            if (other == null) {
+                toView = curr;
+            } else {
+                toView = this.playersFileDAO.getObject(other.Id);
+            }
+
+            List<ulong> teamIds = toView.getTeam(curr.currentTournamentId);
+
+            if (teamIds == null) {
+                return null;
+            }
+
+            return this.pokemonDAO.getMany(teamIds);
+
         }
     }
 }
