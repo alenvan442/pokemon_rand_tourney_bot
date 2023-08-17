@@ -47,5 +47,29 @@ namespace pokemon_rand.src.main.model.persistence
             return player.joinTournament(tourneyId);
         }
 
+        public bool setScore(ulong tourneyId, ulong playerOne, ulong playerTwo, int score) {
+            Player player = this.getObject(playerOne);
+            Player other = this.getObject(playerTwo);
+            int opponentScore = score;
+
+            if (player.alreadyFought(tourneyId, other.id) || other.alreadyFought(tourneyId, player.id)) {
+                return false;
+            }
+
+            if (score == 1) {opponentScore = 0;}
+            if (score == 0) {opponentScore = 1;}
+
+            if (!player.setScore(tourneyId, other.id, score)) {return false;}
+            return other.setScore(tourneyId, player.id, opponentScore);
+        }
+
+        public void deleteScore(ulong tourneyId, ulong playerOne, ulong playerTwo) {
+            Player first = this.getObject(playerOne);
+            Player second = this.getObject(playerTwo);
+
+            first.history[tourneyId].Remove(second.id);
+            second.history[tourneyId].Remove(first.id);
+        }
+
     }
 }

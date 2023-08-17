@@ -34,7 +34,7 @@ namespace pokemon_rand.src.main.model.utilities
             tournamentFileDAO = new TournamentFileDAO(StaticUtil.tournamentJson, json);
 
             playerController = new PlayerController(playersFileDAO, pokemonFileDAO);
-            tournamentController = new TournamentController(tournamentFileDAO);
+            tournamentController = new TournamentController(tournamentFileDAO, playersFileDAO);
 
             //exhibitionController = new ObjectController<Exhibition>(exhibitionFileDAO);
 

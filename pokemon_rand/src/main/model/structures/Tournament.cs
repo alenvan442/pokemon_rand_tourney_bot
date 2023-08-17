@@ -9,28 +9,51 @@ namespace pokemon_rand.src.main.model.structures
     public class Tournament
     {
         [JsonProperty("players")]
-        public Dictionary<ulong, Player> players {get; private set;}
+        public List<ulong> players {get; private set;}
         [JsonProperty("host")] // this will also be the id of this tournament
         public ulong hostId {get; private set;}
+        [JsonProperty("history")]
+        public List<List<ulong>> history {get; private set;} // a list of records in the form of (x, 0, y)
+                                                             // x is player 1, y is player 2 and the second slot
+                                                             // is either a 0, 1, or 2 for lose, win, tie
+                                                             // reading (x, 0, y) is x lost to y
 
-        public Tournament(Dictionary<ulong, Player> Players, ulong host) {
+        public Tournament(List<ulong> Players, ulong host, List<List<ulong>> history) {
             this.players = Players;
             this.hostId = host;
+            this.history = history;
         }
-
+ 
         public bool removePlayer(ulong id) {
             return this.players.Remove(id);
         }
 
         public bool addPlayer(Player player) {
-            this.players.Add(player.id, player);
+            this.players.Add(player.id);
             return true;
         }
 
-        public Player getPlayer(ulong id) {
-            Player result;
-            this.players.TryGetValue(id, out result);
-            return result;
+        public bool setScore(ulong playerOne, ulong playerTwo, int score) {
+            if (!this.players.Contains(playerOne) || !this.players.Contains(playerTwo)) {
+                return false; //players not in tournament
+            }
+
+            if (score < 0 || score > 2) {
+                return false; //invalid result
+            }
+
+            this.history.Add(new List<ulong>() {playerOne, (ulong) score, playerTwo});
+            return true;
+        }
+
+        public bool deleteScore(ulong playerOne, ulong playerTwo) {
+            foreach (var i in this.history) {
+                if (i.Contains(playerOne) && i.Contains(playerTwo)) {
+                    this.history.Remove(i);
+                    return true;
+                }
+            }
+            return false;
         }
 
     }

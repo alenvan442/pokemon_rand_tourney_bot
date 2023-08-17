@@ -7,23 +7,11 @@ namespace pokemon_rand.src.main.model.utilities
     public static class IdentificationSearch
     {
 
-        static PokemonFileDAO? pokemonDAO;
-        static TournamentFileDAO? tournamentDAO;
-
         /// <summary>
         /// initializes this static class
         /// </summary>
-        public static void init(PokemonFileDAO _pokemonDAO, TournamentFileDAO _tournamentDAO) {
-            pokemonDAO = _pokemonDAO;
-            tournamentDAO = _tournamentDAO;
-        }
+        public static void init() {
 
-        public static Pokemon pokemonSearch(ulong id) {
-            return pokemonDAO.getObject(id);
-        }
-
-        public static Tournament tournamentSearch(ulong id) {
-            return tournamentDAO.getObject(id);
         }
 
         /*

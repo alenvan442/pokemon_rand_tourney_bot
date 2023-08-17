@@ -27,7 +27,12 @@ namespace pokemon_rand.src.main.model.structures
         public Dictionary<ulong, int> teamRolls {get; private set;}
         [JsonProperty("singleRolls")]
         public Dictionary<ulong, int> singleRolls {get; private set;}
-
+        [JsonProperty("history")]
+        public Dictionary<ulong, Dictionary<ulong, int>> history {get; private set;} //key is the tourneyid
+                                                                                     //value is another dictionary where
+                                                                                     // the key of that one is the oppinent id
+                                                                                     // and the value is the result
+                                                                                     // 0 for lost, 1 for win, 2 for tie.
         
 
         /// <summary>
@@ -36,7 +41,10 @@ namespace pokemon_rand.src.main.model.structures
         /// <param name="ID">the id of the player</param>
         /// <param name="Name">the associated name of the player</param>       
         [JsonConstructor]
-        public Player(ulong ID, string Name, ulong currentTournamentId, List<ulong> tournaments, Dictionary<ulong, List<ulong>> pokemon, Dictionary<ulong, int> teamRolls, Dictionary<ulong, int> singleRolls) {
+        public Player(ulong ID, string Name, ulong currentTournamentId, 
+                        List<ulong> tournaments, Dictionary<ulong, List<ulong>> pokemon, 
+                        Dictionary<ulong, int> teamRolls, Dictionary<ulong, 
+                        int> singleRolls, Dictionary<ulong, Dictionary<ulong, int>> history) {
             this.id = ID;
             this.name = Name;
             this.currentTournamentId = currentTournamentId;
@@ -44,6 +52,7 @@ namespace pokemon_rand.src.main.model.structures
             this.pokemon = pokemon;
             this.teamRolls = teamRolls;
             this.singleRolls = singleRolls;
+            this.history = history;
         }
 
         /// <summary>
@@ -58,6 +67,7 @@ namespace pokemon_rand.src.main.model.structures
             this.pokemon = new Dictionary<ulong, List<ulong>>();
             this.teamRolls = new Dictionary<ulong, int>();
             this.singleRolls = new Dictionary<ulong, int>();
+            this.history = new Dictionary<ulong, Dictionary<ulong, int>>();
         }
 
         public bool joinTournament(ulong id) {
@@ -67,6 +77,7 @@ namespace pokemon_rand.src.main.model.structures
             this.tournaments.Add(id);
             this.teamRolls.Add(id, 2);
             this.singleRolls.Add(id, 2);
+            this.history.Add(id, new Dictionary<ulong, int>());
             return true;
         }
 
@@ -98,7 +109,7 @@ namespace pokemon_rand.src.main.model.structures
             if (has == false) {
                 return null;
             } 
-            
+
             return this.pokemon[tourneyId];
         }
 
@@ -130,6 +141,24 @@ namespace pokemon_rand.src.main.model.structures
 
             return true;
         }
+
+        public bool setScore(ulong tourneyId, ulong opponentId, int score) {
+            if (score < 0 || score > 2) {
+                return false; //invalid value
+            }
+
+            if (alreadyFought(tourneyId, opponentId)) {
+                return false;
+            }
+
+            this.history[tourneyId].Add(opponentId, score);
+            return true;
+        }
+
+        public bool alreadyFought(ulong tourneyId, ulong opponentId) {
+            return !this.history.ContainsKey(opponentId);
+        }
+        
 
         /// <summary>
         /// The toString method of the player class
