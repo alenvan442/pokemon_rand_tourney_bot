@@ -57,7 +57,7 @@ namespace pokemon_rand.src.main.controller
         /// </summary>
         /// <param name="UID"> The ID of the player to delete </param>
         /// <returns> A boolean indicating whether or not the action was successful </returns>
-        public Boolean deletePlayer(ulong UID)
+        public bool deletePlayer(ulong UID)
         {
             return objectFileDAO.deleteObject(UID);
         }

@@ -47,25 +47,5 @@ namespace pokemon_rand.src.main.model.persistence
             return player.joinTournament(tourneyId);
         }
 
-        public bool teamRoll(DiscordMember member, ulong tourneyId) {
-            Player player = this.getObject(member.Id);
-            if (player.teamRolls[tourneyId] == 0) {
-                return false;
-            }
-        
-            //TODO roll team
-            return player.rollTeam(tourneyId, null);
-        }
-
-        public bool singleRoll(DiscordMember member, ulong tourneyId, ulong old) {
-            Player player = this.getObject(member.Id);
-            if (player.singleRolls[tourneyId] == 0) {
-                return false;
-            }
-
-            //TODO roll single
-            return player.rollSingle(tourneyId, old, null);
-        }
-
     }
 }

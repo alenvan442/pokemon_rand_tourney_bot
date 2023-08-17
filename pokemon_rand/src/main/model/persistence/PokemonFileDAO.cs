@@ -33,6 +33,14 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.model.persistence
             }
         }
 
+        public List<Pokemon> getMany(List<ulong> ids) {
+            List<Pokemon> result = new List<Pokemon>();
+            foreach(var i in ids) {
+                result.Add(this.getObject(i));
+            }
+            return result;
+        }
+
         //use player id as the seed
         public List<Pokemon> rollSix(ulong seed) {
             List<Pokemon> result = new List<Pokemon>();

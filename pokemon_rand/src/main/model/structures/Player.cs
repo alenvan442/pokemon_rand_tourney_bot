@@ -71,7 +71,7 @@ namespace pokemon_rand.src.main.model.structures
             if (!joinTournament(tourneyId)) {                
                 this.teamRolls[tourneyId] -= 1;
             }
-            this.pokemon[tourneyId] = new List<ulong>();
+            this.pokemon[tourneyId].Clear();
             foreach (var i in pokemon) {
                 this.pokemon[tourneyId].Add(i.id);
             }

@@ -3,6 +3,7 @@ using DSharpPlus.Entities;
 using pokemon_rand.src.main.model.persistence;
 using pokemon_rand.src.main.model.structures;
 using pokemon_rand.src.main.controller;
+using pokemon_rand_tourney_bot.pokemon_rand.src.main.model.persistence;
 
 namespace pokemon_rand.src.main.controller
 {
@@ -13,6 +14,7 @@ namespace pokemon_rand.src.main.controller
     public class PlayerController : ObjectController<Player>
     {
         PlayersFileDAO playersFileDAO;
+        PokemonFileDAO pokemonDAO;
         //ObjectFileDAO<Events> eventsFileDAO;
 
         /// <summary>
@@ -20,10 +22,11 @@ namespace pokemon_rand.src.main.controller
         /// Utilizes the player DAO
         /// </summary>
         /// <param name="playersFileDAO"> A class that holds methods that correspond with the manipulation of data with players </param>
-        public PlayerController(PlayersFileDAO playersFileDAO) :
+        public PlayerController(PlayersFileDAO playersFileDAO, PokemonFileDAO pokemonDAO) :
                                     base(playersFileDAO)
         {
             this.playersFileDAO = playersFileDAO;
+            this.pokemonDAO = pokemonDAO;
             //this.eventsFileDAO = eventsDAO;
 
         }
@@ -40,6 +43,25 @@ namespace pokemon_rand.src.main.controller
 
         public bool joinTournament(DiscordMember member, ulong tourneyId) {
             return playersFileDAO.joinTournament(member, tourneyId);
+        }
+
+        public bool rollSix(DiscordMember member, ulong tourneyId) {
+            Player curr = playersFileDAO.getObject(member.Id);
+            if (curr.tournaments.Contains(tourneyId) && curr.teamRolls[tourneyId] <= 0) {
+                return false;
+            } 
+            List<Pokemon> newTeam = pokemonDAO.rollSix(member.Id);
+            return curr.rollTeam(tourneyId, newTeam);
+        }
+
+        public bool rollSingle(DiscordMember member, ulong tourneyId, int selection) {
+            Player curr = playersFileDAO.getObject(member.Id);
+            if (!curr.tournaments.Contains(tourneyId) || curr.singleRolls[tourneyId] <= 0) {
+                return false;
+            }
+            ulong oldId = curr.pokemon[tourneyId][selection];
+            Pokemon newMon = pokemonDAO.rollOne(tourneyId, oldId, pokemonDAO.getMany(curr.pokemon[tourneyId]));
+            return curr.rollSingle(tourneyId, oldId, newMon);
         }
     }
 }

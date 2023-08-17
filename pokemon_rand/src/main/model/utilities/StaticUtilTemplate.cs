@@ -4,7 +4,7 @@ namespace pokemon_rand.src.main.model.utilities
     {
         public static string token = "";
         public static string playersJson = "";
-        public static string tournamentFolder = "";
-        public static Array<string> tournamentJson = new Array<string>();
+        public static string tournamentJson = "";
+        public static string pokemonJson = "";
     }
 }

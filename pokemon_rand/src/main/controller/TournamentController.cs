@@ -1,14 +1,16 @@
+using pokemon_rand.src.main.model.persistence;
+using pokemon_rand.src.main.model.structures;
+
 namespace pokemon_rand.src.main.controller
 {
-    public class TournamentController()
+    public class TournamentController : ObjectController<Tournament>
     {
 
         TournamentFileDAO tournamentDAO;
 
-        public TournamentController(TournamentFileDAO tournamentDAO)
+        public TournamentController(TournamentFileDAO tournamentDAO) : base(tournamentDAO)
         {
             this.tournamentDAO = tournamentDAO;
-            Array arr = new Array()dwad
         }
 
     }
