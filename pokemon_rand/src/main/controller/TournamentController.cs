@@ -1,3 +1,4 @@
+using DSharpPlus.Entities;
 using pokemon_rand.src.main.model.persistence;
 using pokemon_rand.src.main.model.structures;
 
@@ -13,5 +14,8 @@ namespace pokemon_rand.src.main.controller
             this.tournamentDAO = tournamentDAO;
         }
 
+        public bool host(DiscordMember member) {
+            return this.tournamentDAO.newTourney(member.Id);
+        }
     }
 }

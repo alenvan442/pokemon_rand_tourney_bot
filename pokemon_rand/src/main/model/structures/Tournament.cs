@@ -10,7 +10,7 @@ namespace pokemon_rand.src.main.model.structures
     {
         [JsonProperty("players")]
         public Dictionary<ulong, Player> players {get; private set;}
-        [JsonProperty("host")]
+        [JsonProperty("host")] // this will also be the id of this tournament
         public ulong hostId {get; private set;}
 
         public Tournament(Dictionary<ulong, Player> Players, ulong host) {

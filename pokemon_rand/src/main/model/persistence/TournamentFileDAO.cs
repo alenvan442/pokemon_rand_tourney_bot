@@ -9,5 +9,16 @@ namespace pokemon_rand.src.main.model.persistence
 
         public TournamentFileDAO(string jsonString, JsonUtilities jsonUtilities) : base(jsonString, jsonUtilities) { }
 
+        public bool newTourney(ulong hostId) {
+            if (this.getObject(hostId) != null) {
+                return false;
+            }
+
+            Tournament newTourney = new Tournament(new Dictionary<ulong, Player>(), hostId);
+            this.addObject(newTourney, hostId);
+
+            return true;
+        }
+
     }
 }
