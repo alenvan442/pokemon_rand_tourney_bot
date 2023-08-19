@@ -78,26 +78,33 @@ namespace pokemon_rand.src.main.model.structures
             this.teamRolls.Add(id, 2);
             this.singleRolls.Add(id, 2);
             this.history.Add(id, new Dictionary<ulong, int>());
+            this.pokemon.Add(id, new List<ulong>());
             return true;
         }
 
         //check if elligible to roll will be done by caller
-        public bool rollTeam(List<Pokemon> pokemon) {
-            this.pokemon[this.currentTournamentId].Clear();
+        public bool rollTeam(List<Pokemon> pokemon, bool force) {
+            if (this.pokemon[this.currentTournamentId].Count() > 0) {
+                // check if not first time (reroll)
+                if (!force) {
+                    this.teamRolls[this.currentTournamentId] -= 1;
+                }
+                this.pokemon[this.currentTournamentId].Clear();
+            }
+
             foreach (var i in pokemon) {
                 this.pokemon[this.currentTournamentId].Add(i.id);
             }
             return true;
         }
 
-        public bool rollSingle(ulong old, Pokemon _new) {
-            if (!this.tournaments.Contains(this.currentTournamentId) ||
-                !this.pokemon[this.currentTournamentId].Contains(old)) {
-                return false;
-            }
+        public bool rollSingle(ulong old, Pokemon _new, bool force) {
             this.pokemon[this.currentTournamentId].Remove(old);
             this.pokemon[this.currentTournamentId].Add(_new.id);
-            this.singleRolls[this.currentTournamentId] -= 1; 
+
+            if (!force) {
+                this.singleRolls[this.currentTournamentId] -= 1; 
+            }
             return true;
         }
 
@@ -107,7 +114,7 @@ namespace pokemon_rand.src.main.model.structures
             bool has = this.pokemon.TryGetValue(tourneyId, out result);
 
             if (has == false) {
-                return null;
+                return new List<ulong>();
             } 
 
             return this.pokemon[tourneyId];
@@ -153,6 +160,25 @@ namespace pokemon_rand.src.main.model.structures
 
             this.history[tourneyId].Add(opponentId, score);
             return true;
+        }
+
+        public List<int> getScore(ulong tourneyId) {
+            int win = 0;
+            int lose = 0;
+            int tie = 0;
+            Dictionary<ulong, int> curr = this.history[tourneyId];
+
+            foreach (var i in curr.Values) {
+                if (i == 0) {
+                    lose++;
+                } else if (i == 1) {
+                    win++;
+                } else if (i == 2) {
+                    tie++;
+                }
+            }
+
+            return new List<int>() {win, lose, tie};
         }
 
         public bool alreadyFought(ulong tourneyId, ulong opponentId) {
