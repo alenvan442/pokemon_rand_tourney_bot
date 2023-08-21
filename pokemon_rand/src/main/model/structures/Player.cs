@@ -70,6 +70,14 @@ namespace pokemon_rand.src.main.model.structures
             this.history = new Dictionary<ulong, Dictionary<ulong, int>>();
         }
 
+        /// <summary>
+        /// join target tournament and initialize default objects for the tournament
+        /// </summary>
+        /// <param name="id">the tournament to join</param>
+        /// <returns>
+        ///     true: join success
+        ///     false: player is already registered in this tournament
+        /// </returns>
         public bool joinTournament(ulong id) {
             if (this.tournaments.Contains(id)) {
                 return false;
@@ -82,7 +90,15 @@ namespace pokemon_rand.src.main.model.structures
             return true;
         }
 
-        //check if elligible to roll will be done by caller
+        /// <summary>
+        /// sets a full team of pokemon for the player
+        /// check if elligible to roll will be done by caller function
+        /// </summary>
+        /// <param name="pokemon">a list of 6 pokemon to set the team as</param>
+        /// <param name="force">whether or not this was a force roll invoked by the host</param>
+        /// <returns>
+        ///     true: added successful
+        /// </returns>
         public bool rollTeam(List<Pokemon> pokemon, bool force) {
             if (this.pokemon[this.currentTournamentId].Count() > 0) {
                 // check if not first time (reroll)
@@ -98,6 +114,15 @@ namespace pokemon_rand.src.main.model.structures
             return true;
         }
 
+        /// <summary>
+        /// replaces a single pokemon in the player's team
+        /// </summary>
+        /// <param name="old">the pokemon to replace</param>
+        /// <param name="_new">the nee pokemon</param>
+        /// <param name="force">whether this was a forced roll by the host</param>
+        /// <returns>
+        ///     true: added successfilly
+        /// </returns>
         public bool rollSingle(ulong old, Pokemon _new, bool force) {
             this.pokemon[this.currentTournamentId].Remove(old);
             this.pokemon[this.currentTournamentId].Add(_new.id);
@@ -108,6 +133,13 @@ namespace pokemon_rand.src.main.model.structures
             return true;
         }
 
+        /// <summary>
+        /// gets the team of the player
+        /// </summary>
+        /// <param name="tourneyId">the tournament to view the player's team of</param>
+        /// <returns>
+        ///     list of 6 pokemon ids
+        /// </returns>
         public List<ulong> getTeam(ulong tourneyId = 0) {
             List<ulong> result;
             if (tourneyId == 0) {tourneyId = this.currentTournamentId;}
@@ -120,6 +152,14 @@ namespace pokemon_rand.src.main.model.structures
             return this.pokemon[tourneyId];
         }
 
+        /// <summary>
+        /// switch what tournament the player is currently viewing
+        /// </summary>
+        /// <param name="tourneyId">the tournament to switch to</param>
+        /// <returns>
+        ///     true: switch success
+        ///     false: the player is not registered in the targer tournament
+        /// </returns>
         public bool switchTournament(ulong tourneyId) {
             if (!this.tournaments.Contains(tourneyId)) {
                 return false;
@@ -128,6 +168,17 @@ namespace pokemon_rand.src.main.model.structures
             return true;
         }
 
+        /// <summary>
+        /// leave target tournament
+        /// if it's the current tournament then either reset
+        /// the player to not have a tournament OR
+        /// the player's current tournament being the next registered tournament
+        /// </summary>
+        /// <param name="tourneyId">the tournament to leave</param>
+        /// <returns>
+        ///     true: leave success
+        ///     false: the playe ris not registered in that tournament 
+        /// </returns>
         public bool leaveTournament(ulong tourneyId) {
             if (!this.tournaments.Contains(tourneyId)) {
                 return false;
@@ -149,19 +200,32 @@ namespace pokemon_rand.src.main.model.structures
             return true;
         }
 
+        /// <summary>
+        /// sets the score between this player and an opponent
+        /// </summary>
+        /// <param name="tourneyId">the tournament the match was in</param>
+        /// <param name="opponentId">the opponent</param>
+        /// <param name="score">the result of the match</param>
+        /// <returns>
+        ///     true: add success
+        ///     false: invalid score
+        /// </returns>
         public bool setScore(ulong tourneyId, ulong opponentId, int score) {
             if (score < 0 || score > 2) {
                 return false; //invalid value
-            }
-
-            if (alreadyFought(tourneyId, opponentId)) {
-                return false;
             }
 
             this.history[tourneyId].Add(opponentId, score);
             return true;
         }
 
+        /// <summary>
+        /// get the score of the player in a specific tournament
+        /// </summary>
+        /// <param name="tourneyId">the tournament to get the score from</param>
+        /// <returns>
+        ///     the list of scores in the format of (wins, losts, ties)
+        /// </returns>
         public List<int> getScore(ulong tourneyId) {
             int win = 0;
             int lose = 0;
@@ -181,8 +245,17 @@ namespace pokemon_rand.src.main.model.structures
             return new List<int>() {win, lose, tie};
         }
 
+        /// <summary>
+        /// check whether or not the player has already fought the opponent
+        /// </summary>
+        /// <param name="tourneyId">the tournament to check in</param>
+        /// <param name="opponentId">the opponent</param>
+        /// <returns>
+        ///     true: already fought the opponent
+        ///     false: have yet to fight the opponent
+        /// </returns>
         public bool alreadyFought(ulong tourneyId, ulong opponentId) {
-            return !this.history.ContainsKey(opponentId);
+            return this.history.ContainsKey(opponentId);
         }
         
 

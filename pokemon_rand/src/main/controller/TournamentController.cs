@@ -29,14 +29,37 @@ namespace pokemon_rand.src.main.controller
         }
 
         /// <summary>
-        /// 
+        /// gets whether or not the caller is the host
         /// </summary>
-        /// <param name="tourneyId"></param>
-        /// <param name="playerOne"></param>
-        /// <param name="playerTwo"></param>
-        /// <param name="score"></param>
-        /// <returns></returns>
-        public bool setScore(ulong tourneyId, ulong playerOne, ulong playerTwo, int score) {
+        /// <param name="member">the caller</param>
+        /// <returns>
+        ///     true: the caller is the host
+        ///     false: the caller is not the host 
+        /// </returns>
+        public bool isHost(DiscordMember member) {
+            Player caller = this.playerDAO.getObject(member.Id);
+            Tournament currentTourney = this.getObject(caller.currentTournamentId);
+            return currentTourney.hostId == caller.id;
+        }
+
+        /// <summary>
+        /// sets the result of a match, only the host can do this
+        /// the match is read with player one being the main player, example:
+        /// playerOne (0, 1, 2) playerTwo, where (0, 1, 2) are the possible outcomes of the match.
+        ///     0: lose
+        ///     1: win
+        ///     2: tie
+        /// so playerOne (lost against, won against, tied against) playerTwo
+        /// <param name="tourneyId">the id of the tournament the match was in</param>
+        /// <param name="playerOne">the first player</param>
+        /// <param name="playerTwo">the second player</param>
+        /// <param name="score">the result of the match</param>
+        /// <returns>
+        ///     true: the score was set successfully
+        ///     false: one or more of the players is not in the tournament OR the two have already fought eachother 
+        /// </returns>
+        public bool setScore(DiscordMember caller, ulong playerOne, ulong playerTwo, int score) {
+            ulong tourneyId = this.playerDAO.getObject(caller.Id).currentTournamentId;
             bool result;
 
             result = this.tournamentDAO.setScore(tourneyId, playerOne, playerTwo, score);
@@ -58,19 +81,23 @@ namespace pokemon_rand.src.main.controller
         }
 
         /// <summary>
-        /// 
+        /// gets the leaderboard of the current tournament
         /// </summary>
-        /// <param name="tourneyId"></param>
-        /// <returns></returns>
-        public Dictionary<Player, List<int>> getLeaderboard(ulong tourneyId) {
+        /// <param name="member">the member that invoked this command</param>
+        /// <returns>
+        ///     returns a dictionary where each player is the key with their value being their total scores
+        /// </returns>
+        public Dictionary<Player, List<int>> getLeaderboard(DiscordMember member) {
+            // TODO sort the leaderboard somewhere
             Dictionary<Player, List<int>> leaderboard = new Dictionary<Player, List<int>>();
 
-            Tournament currTourney = this.getObject(tourneyId);
+            Player player = this.playerDAO.getObject(member.Id);
+            Tournament currTourney = this.getObject(player.currentTournamentId);
             List<ulong> playerIds = currTourney.players;
 
             foreach (var i in playerIds) {
                 Player currPlayer = this.playerDAO.getObject(i);
-                List<int> scores = currPlayer.getScore(tourneyId);
+                List<int> scores = currPlayer.getScore(player.currentTournamentId);
                 scores.Add(getUnmatched(currTourney, scores));
                 leaderboard.Add(currPlayer, scores);
             }
@@ -80,35 +107,44 @@ namespace pokemon_rand.src.main.controller
         }
 
         /// <summary>
-        /// 
+        /// gets a target player's score
         /// </summary>
-        /// <param name="member"></param>
-        /// <param name="tourneyId"></param>
-        /// <param name="target"></param>
-        /// <returns></returns>
-        public List<int> getPlayerScore(DiscordMember member, ulong tourneyId, DiscordMember target = null) { // test later to see what gets passed in if we use a mention as an argument
+        /// <param name="member">the player who incoked the command</param>
+        /// <param name="target">the player that the caller wishes to view their score</param>
+        /// <returns>
+        ///     a list of ints representing the player's standing
+        ///     (wins, losts, ties, unmatched) 
+        /// </returns>
+        public List<int> getPlayerScore(DiscordMember member, DiscordMember target = null) { // test later to see what gets passed in if we use a mention as an argument
             if (target == null) {
                 target = member;
             }
             Player targetPlayer = this.playerDAO.getObject(target.Id);
-            return targetPlayer.getScore(tourneyId);
+            List<int> scores = targetPlayer.getScore(targetPlayer.currentTournamentId);
+            scores.Add(getUnmatched(this.getObject(targetPlayer.currentTournamentId), scores));
+            return scores;
         }
 
         /// <summary>
-        /// 
+        /// get the list of all matches of the tournament
         /// </summary>
-        /// <param name="tourneyId"></param>
-        /// <returns></returns>
-        public List<List<ulong>> getHistory(ulong tourneyId) {
-            return this.getObject(tourneyId).history;
+        /// <param name="member">the caller</param>
+        /// <returns>
+        ///     a list of matches in the format: (playerOne, result, playerTwo)
+        /// </returns>
+        public List<List<ulong>> getHistory(DiscordMember member) {
+            Player caller = this.playerDAO.getObject(member.Id);
+            return this.getObject(caller.currentTournamentId).history;
         }
 
         /// <summary>
-        /// 
+        /// private function that determines how many battles the player has
         /// </summary>
-        /// <param name="tourney"></param>
-        /// <param name="scores"></param>
-        /// <returns></returns>
+        /// <param name="tourney">the current tournament</param>
+        /// <param name="scores">the current scores of the player (total battles fought so far)</param>
+        /// <returns>
+        ///     an int that holds how many battles are left
+        /// </returns>
         private int getUnmatched(Tournament tourney, List<int> scores) {
             // scores will ALWAYS have 3 integers in it's list where:
             //      [0]: number wins

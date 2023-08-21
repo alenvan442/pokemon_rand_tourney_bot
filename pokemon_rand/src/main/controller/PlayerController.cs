@@ -54,6 +54,7 @@ namespace pokemon_rand.src.main.controller
         public bool joinTournament(DiscordMember member, ulong tourneyId) {
             return playersFileDAO.joinTournament(member, tourneyId);
             // TODO check if the player previously left to ensure they can't rejoin
+            // TODO add the player to the tournament itself
             // TODO do an override for the host in case people are allowed to join back in due to a mistake
         }
 
@@ -79,7 +80,7 @@ namespace pokemon_rand.src.main.controller
         }
 
         /// <summary>
-        /// 
+        /// roll a single pokemon
         /// </summary>
         /// <param name="member">player who is rolling</param>
         /// <param name="selection">which index of the pokemon list to reroll</param>
@@ -112,7 +113,9 @@ namespace pokemon_rand.src.main.controller
         public bool leaveTournament(DiscordMember member, ulong tourneyId) {
             Player curr = playersFileDAO.getObject(member.Id);
             return curr.leaveTournament(tourneyId);
+            // TODO remove the player from the tournament object
             // TODO loop through all players and delete their matchup with the leaving player
+            // TODO remove tournament related attributes form the players
             // TODO create a "pastPlayers" attribute for tournaments to ensure people can't rejoin after leaving
         }
 
@@ -140,27 +143,20 @@ namespace pokemon_rand.src.main.controller
             }
 
             return this.pokemonDAO.getMany(teamIds);
-
         }
+        
 
         /// <summary>
         /// HOST USE ONLY
         /// will force a reroll on that intended target
         /// </summary>
-        /// <param name="host"></param>
-        /// <param name="tourneyId"></param>
         /// <param name="target">target player to invoke the roll</param>
         /// <param name="rollTarget">the index of the player's team to roll (single reroll), otherwise roll all (team reroll)</param>
         /// <returns>
         ///     true: roll was successful
-        ///     false: not the current host or the player is not registered in the tournament 
+        ///     false: the player is not registered in the tournament 
         /// </returns>
-        public bool forceReroll(DiscordMember host, ulong tourneyId, DiscordMember target, int rollTarget = 0) {
-            Tournament tourney = this.tournamentDAO.getObject(tourneyId);
-            if (host.Id != tourney.hostId) {
-                return false;
-            }
-
+        public bool forceReroll(DiscordMember target, int rollTarget = 0) {
             if (rollTarget == 0) {
                 // force roll all
                 return this.rollSix(target, true);
@@ -168,6 +164,14 @@ namespace pokemon_rand.src.main.controller
                 return this.rollSingle(target, rollTarget, true);
             }
 
+        }
+
+        public Object getTrainerCard(DiscordMember member) {
+            // get host
+            // get team
+            // get rolls left
+            // get current score and standing
+            return null;
         }
 
 

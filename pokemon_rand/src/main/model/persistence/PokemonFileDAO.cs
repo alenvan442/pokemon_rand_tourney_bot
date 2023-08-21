@@ -19,6 +19,9 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.model.persistence
             initCategories();
         }
 
+        /// <summary>
+        /// initializes the categories of pokemon
+        /// </summary>
         private void initCategories() {
             List<ulong> ids = new List<ulong>();
             this.basics = this.data;
@@ -33,6 +36,13 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.model.persistence
             }
         }
 
+        /// <summary>
+        /// given a list of pokemon ids, return the corresponding pokemon
+        /// </summary>
+        /// <param name="ids">list of pokemon ids</param>
+        /// <returns>
+        ///     a list of pokemon
+        /// </returns>
         public List<Pokemon> getMany(List<ulong> ids) {
             List<Pokemon> result = new List<Pokemon>();
             foreach(var i in ids) {
@@ -41,7 +51,14 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.model.persistence
             return result;
         }
 
-        //use player id as the seed
+        /// <summary>
+        /// roll 6 pokemon, 5 basics, 1 legend
+        /// duplicates are not allowed
+        /// </summary>
+        /// <param name="seed">the randomizer seed</param>
+        /// <returns>
+        ///     a list of 6 pokemon, 5 basics, 1 legendary
+        /// </returns>
         public List<Pokemon> rollSix(ulong seed) {
             List<Pokemon> result = new List<Pokemon>();
             Random rand = new Random((int) seed);
@@ -52,7 +69,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.model.persistence
             while (result.Count < 5) {
                 int i = rand.Next(this.basics.Count);
                 temp = basics[i];
-                if (checkDupe(result, temp)) {
+                if (!checkDupe(result, temp)) {
                     result.Add(temp);
                 }
             }
@@ -60,18 +77,27 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.model.persistence
             while (result.Count < 6) {
                 int i = rand.Next(this.legends.Count);
                 temp = legends[i];
-                if (checkDupe(result, temp)) {
+                if (!checkDupe(result, temp)) {
                     result.Add(temp);
                 }
             }
             return result;
         }
 
-        //use player id as the seed
+        /// <summary>
+        /// Roll a single selection, used as a reroll for a team
+        /// duplicates are not allowed
+        /// </summary>
+        /// <param name="seed">the randomizer seed</param>
+        /// <param name="old">the id of the pokemon to replace</param>
+        /// <param name="currTeam">the current team of the caller</param>
+        /// <returns>
+        ///     The pokemon to replace the old one with
+        /// </returns>
         public Pokemon rollOne(ulong seed, ulong old, List<Pokemon> currTeam) {
             Pokemon result = null;
             Random rand = new Random((int) seed);
-            int max = 0;
+            int max;
             List<Pokemon> list;
 
             if (this.basics.ContainsKey(old)) {
@@ -92,13 +118,22 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.model.persistence
             return result;
         }
 
+        /// <summary>
+        /// check for a duplicate pokemon
+        /// </summary>
+        /// <param name="currTeam">the team to check the pokemon against</param>
+        /// <param name="checkMon">the pokemon to check against the team</param>
+        /// <returns>
+        ///     true: there was a dupe
+        ///     false: no dupe found 
+        /// </returns>
         public bool checkDupe(List<Pokemon> currTeam, Pokemon checkMon) {
             foreach (var i in currTeam) {
                 if (i.checkDupe(checkMon.id)) {
-                    return false;
+                    return true;
                 }
             }
-            return true;
+            return false;
         }
     }
 }

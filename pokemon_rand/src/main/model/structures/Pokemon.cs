@@ -25,11 +25,16 @@ namespace pokemon_rand.src.main.model.structures
             this.evoLine = evoLine;
         }
 
+        /// <summary>
+        /// check if there was a dupe accoerding to this pokemon's evolution line
+        /// </summary>
+        /// <param name="id">the id of the pokemon to check against</param>
+        /// <returns>
+        ///     true: is dupe
+        ///     false: not a dupe
+        /// </returns>
         public bool checkDupe(ulong id) {
-            if (evoLine.Contains(id)) {
-                return true;
-            }
-            return false;
+            return evoLine.Contains(id);
         }
     }
 }

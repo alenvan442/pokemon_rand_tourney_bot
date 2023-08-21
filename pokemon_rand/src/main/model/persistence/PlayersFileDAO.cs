@@ -42,11 +42,31 @@ namespace pokemon_rand.src.main.model.persistence
             }
         }
 
+        /// <summary>
+        /// join target tournament
+        /// </summary>
+        /// <param name="member">the caller</param>
+        /// <param name="tourneyId">the target tournament to join</param>
+        /// <returns>
+        ///     true: join successful
+        ///     false: the user is already registered in that tournament
+        /// </returns>
         public bool joinTournament(DiscordMember member, ulong tourneyId) {
             Player player = this.getObject(member.Id);
             return player.joinTournament(tourneyId);
         }
 
+        /// <summary>
+        /// set the score of a match
+        /// </summary>
+        /// <param name="tourneyId">the id of the tournament the match took place</param>
+        /// <param name="playerOne">the first player</param>
+        /// <param name="playerTwo">the second player</param>
+        /// <param name="score">the result of the match in regards to player one</param>
+        /// <returns>
+        ///     true: set score successfully
+        ///     false: the players have already fought
+        /// </returns>
         public bool setScore(ulong tourneyId, ulong playerOne, ulong playerTwo, int score) {
             Player player = this.getObject(playerOne);
             Player other = this.getObject(playerTwo);
@@ -59,10 +79,17 @@ namespace pokemon_rand.src.main.model.persistence
             if (score == 1) {opponentScore = 0;}
             if (score == 0) {opponentScore = 1;}
 
-            if (!player.setScore(tourneyId, other.id, score)) {return false;}
-            return other.setScore(tourneyId, player.id, opponentScore);
+            player.setScore(tourneyId, other.id, score);
+            other.setScore(tourneyId, player.id, opponentScore);
+            return true;
         }
 
+        /// <summary>
+        /// deletes the score between two players
+        /// </summary>
+        /// <param name="tourneyId">the tournament</param>
+        /// <param name="playerOne">the first player</param>
+        /// <param name="playerTwo">the second player</param>
         public void deleteScore(ulong tourneyId, ulong playerOne, ulong playerTwo) {
             Player first = this.getObject(playerOne);
             Player second = this.getObject(playerTwo);
