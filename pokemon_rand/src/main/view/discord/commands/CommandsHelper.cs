@@ -10,7 +10,10 @@ namespace pokemon_rand.src.main.view.discord.commands
     public static class CommandsHelper
     {
         public static PlayerController playerController;
-        //public static ObjectController<> employeeController;
+        public static Dictionary<string, string> responses = new Dictionary<string, string> {
+            {"yes", ""},
+            {"no", ""}
+        };
 
         /// <summary>
         /// Constructor of the Farming commands class
@@ -26,6 +29,10 @@ namespace pokemon_rand.src.main.view.discord.commands
                 Description = message
             };
             return embed;
+        }
+
+        public static async Task sendEmbed(DiscordChannel channel, string message) {
+            await channel.SendMessageAsync(createEmbed(message));
         }
 
     }

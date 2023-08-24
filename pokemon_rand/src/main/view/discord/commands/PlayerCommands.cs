@@ -5,57 +5,294 @@ using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity.Extensions;
+using pokemon_rand.src.main.controller;
+using pokemon_rand.src.main.model.structures;
+using pokemon_rand.src.main.view.discord.commands;
 
 namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
 {
     public class PlayerCommands : BaseCommandModule
     {
-        [Command("join")]
-        [Description("")]
-        public async Task join(CommandContext ctx) {
-            await Task.CompletedTask;
+
+        PlayerController playerController;
+        public PlayerCommands(PlayerController controller) {
+            this.playerController = controller;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <param name="host"></param>
+        /// <returns></returns>
+        [Command("join")]
+        [Description("")]
+        public async Task join(CommandContext ctx, DiscordMember host) {
+            if (!this.callerCheck(ctx).Result) {
+                return;
+            }
+
+            DiscordMember caller = ctx.Member;
+
+            DiscordEmbedBuilder embed;
+            if (this.playerController.joinTournament(caller, host.Id)) {
+                embed = CommandsHelper.createEmbed("Sucessfully joined " + host.Nickname + "'s tournament!");
+            } else {
+                embed = CommandsHelper.createEmbed("You're already registered for this tournament!");
+            }
+
+            await ctx.Channel.SendMessageAsync(embed);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
         [Command("roll")]
         [Description("")]
         public async Task roll(CommandContext ctx) {
+            if (!this.callerCheck(ctx).Result) {
+                return;
+            }
+            
+            DiscordMember caller = ctx.Member;
+            
+            if (this.playerController.viewTeam(caller).Count > 0) {
+                // player already has a team
+                string description = "Are you sure you want to reroll your entire team?";
+                if (this.interactConfirm(ctx, description).Result) {
+                    if (!this.playerController.rollSix(caller)) {
+                        await CommandsHelper.sendEmbed(ctx.Channel, "You do not have any team rerolls left!");
+                    } else {
+                        await this.team(ctx, caller, true);
+                    }
+                }
+            } else {
+                // player currently doe snot have a team
+                if (!this.playerController.rollSix(caller)) {
+                    await CommandsHelper.sendEmbed(ctx.Channel, 
+                            "You are currently not participating in any tournaments." +
+                            "\nPlease join one using .join before rolling a team.");
+                } else {
+                    await this.team(ctx, caller, true);
+                }
+            }
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
         [Command("reroll")]
         [Description("")]
         public async Task reroll(CommandContext ctx, int index = -1) {
+            if (!this.callerCheck(ctx).Result) {
+                return;
+            }
+
+            DiscordMember caller = ctx.Member;
+
+            if (index < 0) {
+                // this defaults to a team reroll, let the roll command handle this
+                await this.roll(ctx);
+            } else {
+                if (index < 1 || index > 6) {
+                    await CommandsHelper.sendEmbed(ctx.Channel, "Please choose a valid index between 1-6.");
+                    return;
+                }
+
+                List<Pokemon> team = this.playerController.viewTeam(caller);
+                if (!(team.Count > 0)) {
+                    await CommandsHelper.sendEmbed(ctx.Channel, 
+                            "You are currently not participating in any tournaments." +
+                            "\nPlease join one using .join before attempting to reroll.");
+                    return;
+                }
+
+                string targetRoll = team[index].name;
+                string description = "Are you sure you want to reroll " + targetRoll + "?"; 
+                if (this.interactConfirm(ctx, description).Result) {
+                    if (!this.playerController.rollSingle(caller, index)) {
+                        await CommandsHelper.sendEmbed(ctx.Channel, "You do not have any single rerolls left!");
+                    } else {
+                        await this.team(ctx, caller, true);
+                    }
+                }
+            }
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <param name="target"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
         [Command("forcereroll")]
         [Description("")]
         public async Task forcereroll(CommandContext ctx, DiscordMember target, int index = -1) {
+            if (!this.callerCheck(ctx).Result) {
+                return;
+            }
+
+            if (!(this.playerController.viewTeam(target).Count > 0)) {
+                // the player does not have a team to reroll
+                await CommandsHelper.sendEmbed(ctx.Channel, target.Nickname + " does not have a team to reroll.");
+                return;
+            }
+
+            if (index < 0) {
+                // force full team reroll
+                this.playerController.rollSix(target, true);
+                await this.team(ctx, target, true);
+            } else {
+                if (index < 1 || index > 6 ) {
+                    await CommandsHelper.sendEmbed(ctx.Channel, "Please choose a valid index between 1-6.");
+                    return;
+                }
+
+                this.playerController.rollSingle(target, index, true);
+                await this.team(ctx, target, true);
+            } 
+
             await Task.CompletedTask;
         }
 
-        [Command("view")]
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <param name="target"></param>
+        /// <param name="_new"></param>
+        /// <returns></returns>
+        [Command("team")]
         [Description("")]
-        public async Task view(CommandContext ctx, DiscordMember target = null) {
+        public async Task team(CommandContext ctx, DiscordMember target = null, bool _new = false) {
+            if (!this.callerCheck(ctx).Result) {
+                return;
+            }
+
+            DiscordMember viewTarget = (target is null) ? ctx.Member : target;
+            string description = "";
+            string title = _new ?   
+                                viewTarget.Nickname + "'s New Team" :
+                                viewTarget.Nickname + "'s Team";
+
+            List<Pokemon> team = this.playerController.viewTeam(viewTarget);
+
+            for (int i = 1; i < team.Count; i++) {
+                description += i + ". " + team[i-1].name + "\n";
+            }
+
+            DiscordEmbedBuilder embed = CommandsHelper.createEmbed(description);
+            embed.Title = title;
+
+            await ctx.Channel.SendMessageAsync(embed);
+
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
         [Command("leave")]
         [Description("")]
-        public async Task leave(CommandContext ctx) {
+        public async Task leave(CommandContext ctx, DiscordMember target) {
+            if (!this.callerCheck(ctx).Result) {
+                return;
+            }
+
+            DiscordMember caller = ctx.Member;
+            string description = "Are you sure you want to leave this tournament?";
+
+            if (this.interactConfirm(ctx, description).Result) {
+                if (this.playerController.leaveTournament(caller, target.Id)) {
+                    await CommandsHelper.sendEmbed(ctx.Channel, "Left " + target + "'s tournament successfully.");
+                } else {
+                    await CommandsHelper.sendEmbed(ctx.Channel,
+                                "You are either not currently a participant of the requested tournament, " +
+                                "or that player is not hosting a tournament.");
+                }
+            }
+
             await Task.CompletedTask;
         }
 
         [Command("switch")]
         [Description("")]
         public async Task _switch(CommandContext ctx) {
+            if (!this.callerCheck(ctx).Result) {
+                return;
+            }
+
             await Task.CompletedTask;
         }
 
         [Command("tcard")]
         [Description("")]
         public async Task tcard(CommandContext ctx) {
+            if (!this.callerCheck(ctx).Result) {
+                return;
+            }
+
             await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <param name="description"></param>
+        /// <returns></returns>
+        private async Task<bool> interactConfirm(CommandContext ctx, string description) {
+            DiscordMember caller = ctx.Member;
+            var message = await ctx.Channel.SendMessageAsync(CommandsHelper.createEmbed(description));
+                
+            foreach (var i in CommandsHelper.responses.Values) {
+                await message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, i));
+            }
+
+            var interactivity = ctx.Client.GetInteractivity();
+
+            var response = await interactivity.WaitForReactionAsync(x =>
+                x.User == caller &&
+                x.Message == message &&
+                CommandsHelper.responses.ContainsValue(x.Emoji.Name)
+            );
+
+            if (response.Result.Emoji.Name == CommandsHelper.responses["yes"]) {
+                return true;
+            } else if (response.Result.Emoji.Name == CommandsHelper.responses["no"]) {
+                return false;
+            } else {
+                await CommandsHelper.sendEmbed(ctx.Channel, "Unknown interactivity error occured.");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
+        private async Task<bool> callerCheck(CommandContext ctx) {
+            var caller = ctx.Member;
+
+            if (caller is null) {
+                await CommandsHelper.sendEmbed(ctx.Channel, "Unknown caller error occured");
+                return false;
+            }
+
+            return true;
         }
     }
 }
