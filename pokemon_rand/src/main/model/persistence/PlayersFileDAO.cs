@@ -65,12 +65,16 @@ namespace pokemon_rand.src.main.model.persistence
         /// <param name="score">the result of the match in regards to player one</param>
         /// <returns>
         ///     true: set score successfully
-        ///     false: the players have already fought
+        ///     false: the players have already fought or one or more of the players are not registered in the tournament
         /// </returns>
         public bool setScore(ulong tourneyId, ulong playerOne, ulong playerTwo, int score) {
             Player player = this.getObject(playerOne);
             Player other = this.getObject(playerTwo);
             int opponentScore = score;
+
+            if (!(player.tournaments.Contains(tourneyId) && other.tournaments.Contains(tourneyId))) {
+                return false;
+            }
 
             if (player.alreadyFought(tourneyId, other.id) || other.alreadyFought(tourneyId, player.id)) {
                 return false;

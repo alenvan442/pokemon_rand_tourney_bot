@@ -16,8 +16,10 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
     {
 
         PlayerController playerController;
-        public PlayerCommands(PlayerController controller) {
+        TournamentController tourneyController;
+        public PlayerCommands(PlayerController controller, TournamentController tourneyController) {
             this.playerController = controller;
+            this.tourneyController = tourneyController;
         }
 
         /// <summary>
@@ -29,7 +31,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         [Command("join")]
         [Description("")]
         public async Task join(CommandContext ctx, DiscordMember host) {
-            if (!this.callerCheck(ctx).Result) {
+            if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
 
@@ -53,7 +55,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         [Command("roll")]
         [Description("")]
         public async Task roll(CommandContext ctx) {
-            if (!this.callerCheck(ctx).Result) {
+            if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
             
@@ -91,7 +93,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         [Command("reroll")]
         [Description("")]
         public async Task reroll(CommandContext ctx, int index = -1) {
-            if (!this.callerCheck(ctx).Result) {
+            if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
 
@@ -137,7 +139,14 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         [Command("forcereroll")]
         [Description("")]
         public async Task forcereroll(CommandContext ctx, DiscordMember target, int index = -1) {
-            if (!this.callerCheck(ctx).Result) {
+            if (!CommandsHelper.callerCheck(ctx).Result) {
+                return;
+            }
+
+            //check if host caller
+            if (!this.tourneyController.isHost(ctx.Member, target)) {
+                await CommandsHelper.sendEmbed(ctx.Channel, "You are no tht ehost of the tournament, " + 
+                                        "or the target player is currently not registered in your tournament");
                 return;
             }
 
@@ -174,7 +183,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         [Command("team")]
         [Description("")]
         public async Task team(CommandContext ctx, DiscordMember target = null, bool _new = false) {
-            if (!this.callerCheck(ctx).Result) {
+            if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
 
@@ -207,7 +216,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         [Command("leave")]
         [Description("")]
         public async Task leave(CommandContext ctx, DiscordMember target) {
-            if (!this.callerCheck(ctx).Result) {
+            if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
 
@@ -230,7 +239,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         [Command("switch")]
         [Description("")]
         public async Task _switch(CommandContext ctx) {
-            if (!this.callerCheck(ctx).Result) {
+            if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
 
@@ -240,7 +249,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         [Command("tcard")]
         [Description("")]
         public async Task tcard(CommandContext ctx) {
-            if (!this.callerCheck(ctx).Result) {
+            if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
 
@@ -279,20 +288,5 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="ctx"></param>
-        /// <returns></returns>
-        private async Task<bool> callerCheck(CommandContext ctx) {
-            var caller = ctx.Member;
-
-            if (caller is null) {
-                await CommandsHelper.sendEmbed(ctx.Channel, "Unknown caller error occured");
-                return false;
-            }
-
-            return true;
-        }
     }
 }

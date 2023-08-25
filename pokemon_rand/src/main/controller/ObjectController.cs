@@ -34,14 +34,6 @@ namespace pokemon_rand.src.main.controller
             return objectFileDAO.getObjects();
         }
 
-        public T[] getObjectsDifference(T[] owned) {
-            List<T> all = getObjects().ToList();
-            foreach (T i in owned) {
-                if (all.Contains(i)) { all.Remove(i); }
-            }
-            return all.ToArray();
-        }
-
         /// <summary>
         /// Adds a new player to the database
         /// </summary>

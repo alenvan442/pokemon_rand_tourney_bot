@@ -36,10 +36,37 @@ namespace pokemon_rand.src.main.controller
         ///     true: the caller is the host
         ///     false: the caller is not the host 
         /// </returns>
-        public bool isHost(DiscordMember member) {
-            Player caller = this.playerDAO.getObject(member.Id);
+        public bool isHost(DiscordMember target) {
+            Player caller = this.playerDAO.getObject(target.Id);
             Tournament currentTourney = this.getObject(caller.currentTournamentId);
-            return currentTourney.hostId == caller.id;
+
+            if (currentTourney is null) {
+                return false;
+            }
+
+            return currentTourney.hostId == caller.id; 
+        }
+
+        public bool isHost(DiscordMember target, DiscordMember player) {
+            Player caller = this.playerDAO.getObject(target.Id);
+            Player reference = this.playerDAO.getObject(player.Id);
+            Tournament currentTourney = this.getObject(caller.currentTournamentId);
+
+            return ((currentTourney is null) ? false : currentTourney.hostId == caller.id) ||
+                    reference.tournaments.Contains(currentTourney.hostId);
+        }
+
+        public bool isHost(DiscordMember target, DiscordMember playerOne, DiscordMember playerTwo) {
+            Player caller = this.playerDAO.getObject(target.Id);
+            Player one = this.playerDAO.getObject(playerOne.Id);
+            Player two = this.playerDAO.getObject(playerTwo.Id);
+            Tournament currentTourney = this.getObject(caller.currentTournamentId);
+            
+            bool oneTourney = one.tournaments.Contains(caller.id);
+            bool twoTourney = two.tournaments.Contains(caller.id);
+            return ((currentTourney is null) ? false : currentTourney.hostId == caller.id) ||
+                    (oneTourney && twoTourney); // are you the host of the tournament you're currently participating it
+                                                // OR are you the host of a tournament both participants are in.
         }
 
         /// <summary>
@@ -50,6 +77,7 @@ namespace pokemon_rand.src.main.controller
         ///     1: win
         ///     2: tie
         /// so playerOne (lost against, won against, tied against) playerTwo
+        /// </summary> 
         /// <param name="tourneyId">the id of the tournament the match was in</param>
         /// <param name="playerOne">the first player</param>
         /// <param name="playerTwo">the second player</param>
@@ -59,7 +87,7 @@ namespace pokemon_rand.src.main.controller
         ///     false: one or more of the players is not in the tournament OR the two have already fought eachother 
         /// </returns>
         public bool setScore(DiscordMember caller, ulong playerOne, ulong playerTwo, int score) {
-            ulong tourneyId = this.playerDAO.getObject(caller.Id).currentTournamentId;
+            ulong tourneyId = caller.Id;
             bool result;
 
             result = this.tournamentDAO.setScore(tourneyId, playerOne, playerTwo, score);
@@ -86,12 +114,16 @@ namespace pokemon_rand.src.main.controller
         /// <param name="member">the member that invoked this command</param>
         /// <returns>
         ///     returns a dictionary where each player is the key with their value being their total scores
+        ///     null if the user is currently not in a tournament
         /// </returns>
         public Dictionary<Player, List<int>> getLeaderboard(DiscordMember member) {
             // TODO sort the leaderboard somewhere
             Dictionary<Player, List<int>> leaderboard = new Dictionary<Player, List<int>>();
 
             Player player = this.playerDAO.getObject(member.Id);
+
+            if (player.currentTournamentId == 0) {return null;}
+
             Tournament currTourney = this.getObject(player.currentTournamentId);
             List<ulong> playerIds = currTourney.players;
 
@@ -114,12 +146,17 @@ namespace pokemon_rand.src.main.controller
         /// <returns>
         ///     a list of ints representing the player's standing
         ///     (wins, losts, ties, unmatched) 
+        ///     
+        ///     null is the player is currently not in a tournament 
         /// </returns>
         public List<int> getPlayerScore(DiscordMember member, DiscordMember target = null) { // test later to see what gets passed in if we use a mention as an argument
             if (target == null) {
                 target = member;
             }
             Player targetPlayer = this.playerDAO.getObject(target.Id);
+
+            if (targetPlayer.currentTournamentId == 0) {return null;}
+
             List<int> scores = targetPlayer.getScore(targetPlayer.currentTournamentId);
             scores.Add(getUnmatched(this.getObject(targetPlayer.currentTournamentId), scores));
             return scores;
@@ -130,10 +167,12 @@ namespace pokemon_rand.src.main.controller
         /// </summary>
         /// <param name="member">the caller</param>
         /// <returns>
-        ///     a list of matches in the format: (playerOne, result, playerTwo)
+        ///     a list of matches in the format: (playerOne, result, playerTwo),
+        ///     null if the player is not currently in a tournament.
         /// </returns>
         public List<List<ulong>> getHistory(DiscordMember member) {
             Player caller = this.playerDAO.getObject(member.Id);
+            if (caller.currentTournamentId == 0) {return null;}
             return this.getObject(caller.currentTournamentId).history;
         }
 

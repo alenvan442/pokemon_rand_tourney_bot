@@ -136,6 +136,8 @@ namespace pokemon_rand.src.main.controller
                 toView = this.playersFileDAO.getObject(other.Id);
             }
 
+            if (toView.currentTournamentId == 0) {return null;}
+
             List<ulong> teamIds = toView.getTeam(curr.currentTournamentId);
 
             if (teamIds == null) {
