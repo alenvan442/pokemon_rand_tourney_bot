@@ -38,6 +38,7 @@ namespace pokemon_rand.src.main.model.persistence
             {
                 Player newPlayer = new Player(member);
                 addObject(newPlayer, member.Id);
+                save();
                 return true;
             }
         }
@@ -53,7 +54,9 @@ namespace pokemon_rand.src.main.model.persistence
         /// </returns>
         public bool joinTournament(DiscordMember member, ulong tourneyId) {
             Player player = this.getObject(member.Id);
-            return player.joinTournament(tourneyId);
+            bool result = player.joinTournament(tourneyId);
+            save();
+            return result;
         }
 
         /// <summary>
@@ -85,6 +88,7 @@ namespace pokemon_rand.src.main.model.persistence
 
             player.setScore(tourneyId, other.id, score);
             other.setScore(tourneyId, player.id, opponentScore);
+            save();
             return true;
         }
 
@@ -100,6 +104,7 @@ namespace pokemon_rand.src.main.model.persistence
 
             first.history[tourneyId].Remove(second.id);
             second.history[tourneyId].Remove(first.id);
+            save();
         }
 
     }

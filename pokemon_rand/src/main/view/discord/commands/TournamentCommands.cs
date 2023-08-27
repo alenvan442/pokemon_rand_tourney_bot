@@ -39,12 +39,52 @@ namespace pokemon_rand.src.main.view.discord.commands
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <param name="pageNumber"></param>
+        /// <returns></returns>
         [Command("leaderboard")]
         [Description("")]
-        public async Task leaderboard(CommandContext ctx) {
+        public async Task leaderboard(CommandContext ctx, int pageNumber) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
+
+            List<Tuple<Player, int, int, int>> leaderboard = this.tourneyController.getLeaderboard(ctx.Member);
+            
+            string description = "";
+
+            // set up page ranges
+            int maxPages = (int)Math.Ceiling((double)leaderboard.Count / 10.0);
+
+            if (pageNumber < 1) {pageNumber = 1;}
+            if (pageNumber > maxPages) {pageNumber = maxPages;}
+
+            int min = (pageNumber * 10) - 10;
+            int max;
+
+            if (pageNumber == maxPages) {
+                max = Math.DivRem(leaderboard.Count, 10).Remainder;
+            } else {
+                max = 10;
+            }
+
+            int index = 10 * (pageNumber - 1);
+
+            leaderboard = leaderboard.GetRange(min, max);
+
+            foreach (Tuple<Player, int, int, int> i in leaderboard) {
+                description += index + ". " + i.Item1.name + ": " + i.Item2 + "W/" + i.Item3 + "L/" + i.Item4 + "T\n";
+            }
+
+            DiscordEmbedBuilder embed = CommandsHelper.createEmbed(description);
+            embed.Title = "Leaderboard";
+            embed.Footer.Text = "Page " + pageNumber;
+
+            await ctx.Channel.SendMessageAsync(embed);
+
             await Task.CompletedTask;
         }
 
@@ -101,16 +141,20 @@ namespace pokemon_rand.src.main.view.discord.commands
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <param name="pageNumber"></param>
+        /// <returns></returns>
         [Command("history")]
         [Description("")]
-        public async Task history(CommandContext ctx, int pageNumber = 0) {
+        public async Task history(CommandContext ctx, int pageNumber = 1) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
 
-            if (pageNumber < 0) {pageNumber = 0;}
-
-            List<List<ulong>> scores = this.tourneyController.getHistory(ctx.Member);
+            List<string> scores = this.tourneyController.getHistory(ctx.Member, pageNumber);
 
             if (scores is null) {
                 await CommandsHelper.sendEmbed(ctx.Channel, "You are currently not in a tournament. \n" + 
@@ -118,26 +162,83 @@ namespace pokemon_rand.src.main.view.discord.commands
                 return;
             }
 
-            // formulate the output string as pages
+            // set up page ranges
+            int maxPages = (int)Math.Ceiling((double)scores.Count / 10.0);
+
+            if (pageNumber < 1) {pageNumber = 1;}
+            if (pageNumber > maxPages) {pageNumber = maxPages;}
+
+            int min = (pageNumber * 10) - 10;
+            int max;
+
+            if (pageNumber == maxPages) {
+                max = Math.DivRem(scores.Count, 10).Remainder;
+            } else {
+                max = 10;
+            }
+
+            scores = scores.GetRange(min, max);
+
+            string history = "";
+
+            foreach (string i in scores) {
+                history += i + "\n";
+            }
+
+            DiscordEmbedBuilder embed = CommandsHelper.createEmbed(history);
+            embed.Title = "Tournament History";
+
+            await ctx.Channel.SendMessageAsync(embed);
 
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <param name="pageNumber"></param>
+        /// <returns></returns>
         [Command("tournaments")]
         [Description("")]
-        public async Task tournaments(CommandContext ctx, int pageNumber) {
+        public async Task tournaments(CommandContext ctx, int pageNumber = 1) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
 
-            if (pageNumber < 0) {pageNumber = 0;}
-
-            List<Tournament> tournaments = this.tourneyController.getObjects().ToList();
+            List<string> tournaments = this.tourneyController.getTournaments(ctx.Member, pageNumber);
 
             if (tournaments is null || tournaments.Count() == 0) {
                 await CommandsHelper.sendEmbed(ctx.Channel, "There are currently no active tournaments.");
                 return;
             }
+
+                        // set up page ranges
+            int maxPages = (int)Math.Ceiling((double)tournaments.Count / 10.0);
+
+            if (pageNumber < 1) {pageNumber = 1;}
+            if (pageNumber > maxPages) {pageNumber = maxPages;}
+
+            int min = (pageNumber * 10) - 10;
+            int max;
+
+            if (pageNumber == maxPages) {
+                max = Math.DivRem(tournaments.Count, 10).Remainder;
+            } else {
+                max = 10;
+            }
+
+            tournaments = tournaments.GetRange(min, max);
+
+            string list = "";
+            foreach (string i in tournaments) {
+                list += i + "\n";
+            }
+
+            DiscordEmbedBuilder embed = CommandsHelper.createEmbed(list);
+            embed.Title = "All Tournaments";
+
+            await ctx.Channel.SendMessageAsync(embed);
 
             // formulate the output string as pages
             

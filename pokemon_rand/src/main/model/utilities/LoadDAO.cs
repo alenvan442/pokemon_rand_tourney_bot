@@ -38,7 +38,21 @@ namespace pokemon_rand.src.main.model.utilities
 
             //exhibitionController = new ObjectController<Exhibition>(exhibitionFileDAO);
 
-            CommandsHelper.setup(playerController);
+            CommandsHelper.setup(playerController, tournamentController);
+
+            for (int i = 1; i <= 1010; i++) {
+                string imageId = i.ToString();
+
+                if (i < 10) {
+                    imageId = "00" + i;
+                } else if (i >= 10 && i < 100) {
+                    imageId = "0" + i;
+                }
+
+                string imagePath = "pokemon_rand/data/Pokemon Sprites/" + imageId + ".png";
+                Pokemon pokemon = new Pokemon((ulong)i, "", imagePath, null);
+                pokemonFileDAO.addObject(pokemon, pokemon.id);
+            }
             
         }        
     }

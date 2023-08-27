@@ -116,9 +116,9 @@ namespace pokemon_rand.src.main.controller
         ///     returns a dictionary where each player is the key with their value being their total scores
         ///     null if the user is currently not in a tournament
         /// </returns>
-        public Dictionary<Player, List<int>> getLeaderboard(DiscordMember member) {
-            // TODO sort the leaderboard somewhere
-            Dictionary<Player, List<int>> leaderboard = new Dictionary<Player, List<int>>();
+        public List<Tuple<Player, int, int, int>> getLeaderboard(DiscordMember member) {
+            List<Tuple<Player, int, int, int>> leaderboard = new List<Tuple<Player, int, int, int>>();
+            Dictionary<Player, List<int>> records = new Dictionary<Player, List<int>>();
 
             Player player = this.playerDAO.getObject(member.Id);
 
@@ -131,7 +131,16 @@ namespace pokemon_rand.src.main.controller
                 Player currPlayer = this.playerDAO.getObject(i);
                 List<int> scores = currPlayer.getScore(player.currentTournamentId);
                 scores.Add(getUnmatched(currTourney, scores));
-                leaderboard.Add(currPlayer, scores);
+                records.Add(currPlayer, scores);
+            }
+
+            List<ulong> sorted = this.sortLeaderboard(records);
+
+            // fill the full leaderboard
+            foreach (ulong i in sorted) {
+                Player target = this.playerDAO.getObject(i);
+                List<int> record = records[target];
+                leaderboard.Add(new Tuple<Player, int, int, int>(target, record[0], record[1], record[2]));
             }
 
             return leaderboard;
@@ -170,10 +179,48 @@ namespace pokemon_rand.src.main.controller
         ///     a list of matches in the format: (playerOne, result, playerTwo),
         ///     null if the player is not currently in a tournament.
         /// </returns>
-        public List<List<ulong>> getHistory(DiscordMember member) {
+        public List<string> getHistory(DiscordMember member, int pageNumber = 1) {
             Player caller = this.playerDAO.getObject(member.Id);
             if (caller.currentTournamentId == 0) {return null;}
-            return this.getObject(caller.currentTournamentId).history;
+            List<List<ulong>> history = this.getObject(caller.currentTournamentId).history;
+            List<string> result = new List<string>();
+ 
+            for (int i = history.Count - 1; i >= 0; i--) {
+                List<ulong> curr = history[i];
+                Player one = this.playerDAO.getObject(curr[0]);
+                Player two = this.playerDAO.getObject(curr[2]);
+                string score = "";
+
+                if (curr[1] == 0) { score = " Lost To "; }
+                else if (curr[1] == 1) { score = " Won Against "; }
+                else if (curr[1] == 2) { score = " Tied against "; }
+
+                result.Add(one.name + score + two.name);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="member"></param>
+        /// <param name="pageNumber"></param>
+        /// <returns></returns>
+        public List<string> getTournaments(DiscordMember member, int pageNumber = 1) {
+            List<Tournament> tournaments = this.getObjects().ToList();
+            
+            if (tournaments is null || tournaments.Count == 0) {
+                return null;
+            }
+
+            List<string> result = new List<string>();
+
+            for (int i = 0; i < tournaments.Count; i++) {
+                result.Add(this.playerDAO.getObject(tournaments[i].hostId).name + "'s Tournament");
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -192,6 +239,55 @@ namespace pokemon_rand.src.main.controller
             int totalPlayers = tourney.players.Count();
             int totalMatched = scores[0] + scores[1] + scores[2];
             return totalPlayers - totalMatched;
+        }
+
+        private List<ulong> sortLeaderboard(Dictionary<Player, List<int>> scores) {
+            List<ulong> sorted = new List<ulong>();
+            List<Tuple<ulong, int>> list = new List<Tuple<ulong, int>>();
+            
+            // convert to sortable list
+            foreach (Player i in scores.Keys) {
+                int totalScore = 0;
+                List<int> record = scores[i];
+                totalScore += record[0] * 3;
+                totalScore += record[2];
+                list.Add(new Tuple<ulong, int>(i.id, totalScore));
+            }
+
+            // sort the list
+            list = this.sortLeaderboardHelper(list);
+
+            foreach (Tuple<ulong, int> i in list) {
+                sorted.Add(i.Item1);
+            } 
+
+            return sorted;
+        }
+
+        private List<Tuple<ulong, int>> sortLeaderboardHelper(List<Tuple<ulong, int>> list) {
+            if (list.Count() < 3) {
+                return list;
+            }
+
+            List<Tuple<ulong, int>> first = new List<Tuple<ulong, int>>();
+            List<Tuple<ulong, int>> second = new List<Tuple<ulong, int>>();
+            Tuple<ulong, int> middle = list[list.Count / 2];
+
+            foreach (Tuple<ulong, int> i in list) {
+                if (i.Item2 > middle.Item2) {
+                    second.Add(i);
+                } else if (i.Item2 < middle.Item2 || i.Item2 == middle.Item2) {
+                    first.Add(i);
+                }
+            }
+
+            first = this.sortLeaderboardHelper(first);
+            second = this.sortLeaderboardHelper(second);
+
+            first.Add(middle);
+            first.AddRange(second);
+
+            return first;
         }
 
     }

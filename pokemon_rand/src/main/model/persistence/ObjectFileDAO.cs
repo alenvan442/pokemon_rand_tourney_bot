@@ -96,6 +96,11 @@ namespace pokemon_rand.src.main.model.persistence
             return true;
         }
 
+        public void deleteAll() {
+            data.Clear();
+            save();
+        }
+
         /// <summary>
         /// Retrieves the requested player's status information
         /// </summary>

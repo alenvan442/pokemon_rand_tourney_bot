@@ -24,7 +24,7 @@ namespace pokemon_rand.src.main.model.persistence
 
             Tournament newTourney = new Tournament(new List<ulong>(), hostId, new List<List<ulong>>());
             this.addObject(newTourney, hostId);
-
+            save();
             return true;
         }
 
@@ -41,7 +41,9 @@ namespace pokemon_rand.src.main.model.persistence
         /// </returns>
         public bool setScore(ulong tourneyId, ulong playerOne, ulong playerTwo, int score) {
             Tournament curr = this.getObject(tourneyId);
-            return curr.setScore(playerOne, playerTwo, score);
+            bool result = curr.setScore(playerOne, playerTwo, score);
+            save();
+            return result;
         }
 
         /// <summary>
@@ -53,6 +55,7 @@ namespace pokemon_rand.src.main.model.persistence
         public void deleteScore(ulong tourneyId, ulong playerOne, ulong playerTwo) {
             Tournament curr = this.getObject(tourneyId);
             curr.deleteScore(playerOne, playerTwo);
+            save();
         }
 
     }

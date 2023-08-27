@@ -76,7 +76,9 @@ namespace pokemon_rand.src.main.controller
                 return false;
             } 
             List<Pokemon> newTeam = pokemonDAO.rollSix(member.Id);
-            return curr.rollTeam(newTeam, force);
+            bool result = curr.rollTeam(newTeam, force);
+            this.playersFileDAO.save();
+            return result;
         }
 
         /// <summary>
@@ -98,7 +100,9 @@ namespace pokemon_rand.src.main.controller
             }
             ulong oldId = curr.pokemon[tourneyId][selection-1];
             Pokemon newMon = pokemonDAO.rollOne(tourneyId, oldId, pokemonDAO.getMany(curr.pokemon[tourneyId]));
-            return curr.rollSingle(oldId, newMon, force);
+            bool result = curr.rollSingle(oldId, newMon, force);
+            this.playersFileDAO.save();
+            return result;
         }
 
         /// <summary>
@@ -112,11 +116,13 @@ namespace pokemon_rand.src.main.controller
         /// </returns>
         public bool leaveTournament(DiscordMember member, ulong tourneyId) {
             Player curr = playersFileDAO.getObject(member.Id);
-            return curr.leaveTournament(tourneyId);
+            bool result = curr.leaveTournament(tourneyId);
+            this.playersFileDAO.save();
             // TODO remove the player from the tournament object
             // TODO loop through all players and delete their matchup with the leaving player
             // TODO remove tournament related attributes form the players
             // TODO create a "pastPlayers" attribute for tournaments to ensure people can't rejoin after leaving
+            return result;
         }
 
         /// <summary>
@@ -169,11 +175,30 @@ namespace pokemon_rand.src.main.controller
         }
 
         public Object getTrainerCard(DiscordMember member) {
+            Player player = this.getObject(member.Id);
+            if (player.currentTournamentId == 0) {return null;}
             // get host
+            Player host = this.getObject(player.currentTournamentId);
             // get team
+            List<Pokemon> team = this.pokemonDAO.getMany(player.getTeam());
             // get rolls left
+            int singleRolls = player.singleRolls[player.currentTournamentId];
+            int teamRolls = player.teamRolls[player.currentTournamentId];
             // get current score and standing
-            return null;
+            List<int> score = player.getScore(player.currentTournamentId);
+            return (player, host, team, singleRolls, teamRolls, score);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="member"></param>
+        /// <param name="tourneyId"></param>
+        /// <returns></returns>
+        public bool switchTournament(DiscordMember member, ulong tourneyId) {
+            bool result = this.playersFileDAO.getObject(member.Id).switchTournament(tourneyId);
+            this.playersFileDAO.save();
+            return result;
         }
 
 

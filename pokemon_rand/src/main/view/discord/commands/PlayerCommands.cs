@@ -236,11 +236,23 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <param name="host"></param>
+        /// <returns></returns>
         [Command("switch")]
         [Description("")]
-        public async Task _switch(CommandContext ctx) {
+        public async Task _switch(CommandContext ctx, DiscordMember host) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
+            }
+
+            if (this.playerController.switchTournament(ctx.Member, host.Id)) {
+                await CommandsHelper.sendEmbed(ctx.Channel, "Switched current tournament sucessfully/");
+            } else {
+                await CommandsHelper.sendEmbed(ctx.Channel, "You are not registered in that tournament.");
             }
 
             await Task.CompletedTask;
