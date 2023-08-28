@@ -265,6 +265,54 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
                 return;
             }
 
+            TrainerCard tcard = this.playerController.getTrainerCard(ctx.Member);
+            
+            if (tcard.player is null) {
+                await CommandsHelper.sendEmbed(ctx.Channel, "Unknown error occured");
+                return;
+            }
+
+            DiscordEmbedBuilder embed = CommandsHelper.createEmbed("");
+            embed.Title = tcard.player.name + "'s Trainer Card";
+
+            if (tcard.host is null) {
+                embed.AddField("Tournament", "You are currently not in a tournament");
+                await ctx.Channel.SendMessageAsync(embed);
+                return;                
+            }
+
+            embed.AddField("Tournament", tcard.host.name);
+
+            string teamDescription = "";
+
+            if (tcard.team is null) {
+                teamDescription = "You currently do not have a team";
+            } else {
+                foreach (Pokemon i in tcard.team) {
+                    teamDescription += i.name + ", ";
+                }
+            }
+
+            embed.AddField("Team", teamDescription);
+
+            //guarenteed to not be null here
+            embed.AddField("Single Rolls", tcard.singleRolls.ToString());
+            embed.AddField("Team Rolls", tcard.teamRolls.ToString());
+
+            // must guarentee 4 elements are in the record
+            if (tcard.record is null || tcard.record.Count != 4) {
+                await CommandsHelper.sendEmbed(ctx.Channel, "Unknown error occured");
+                return; 
+            }
+
+            embed.AddField("Record", tcard.record[0] + " W/" + tcard.record[1] + " L/" + 
+                                        tcard.record[2] + " T/" + tcard.record[3] + " UM");
+            
+            embed.AddField("Ranking", tcard.ranking.ToString());
+            embed.WithThumbnail(ctx.Member.AvatarUrl);
+
+            await ctx.Channel.SendMessageAsync(embed);
+
             await Task.CompletedTask;
         }
 

@@ -15,6 +15,7 @@ namespace pokemon_rand.src.main.controller
         PlayersFileDAO playersFileDAO;
         PokemonFileDAO pokemonDAO;
         TournamentFileDAO tournamentDAO;
+        TournamentController tournamentController;
         //ObjectFileDAO<Events> eventsFileDAO;
 
         /// <summary>
@@ -22,12 +23,14 @@ namespace pokemon_rand.src.main.controller
         /// Utilizes the player DAO
         /// </summary>
         /// <param name="playersFileDAO"> A class that holds methods that correspond with the manipulation of data with players </param>
-        public PlayerController(PlayersFileDAO playersFileDAO, PokemonFileDAO pokemonDAO, TournamentFileDAO tournamentDAO) :
+        public PlayerController(PlayersFileDAO playersFileDAO, PokemonFileDAO pokemonDAO, TournamentFileDAO tournamentDAO,
+                                TournamentController tournamentController) :
                                     base(playersFileDAO)
         {
             this.playersFileDAO = playersFileDAO;
             this.pokemonDAO = pokemonDAO;
             this.tournamentDAO = tournamentDAO;
+            this.tournamentController = tournamentController;
             //this.eventsFileDAO = eventsDAO;
 
         }
@@ -174,9 +177,9 @@ namespace pokemon_rand.src.main.controller
 
         }
 
-        public Object getTrainerCard(DiscordMember member) {
+        public TrainerCard getTrainerCard(DiscordMember member) {
             Player player = this.getObject(member.Id);
-            if (player.currentTournamentId == 0) {return null;}
+            if (player.currentTournamentId == 0) {return new TrainerCard();}
             // get host
             Player host = this.getObject(player.currentTournamentId);
             // get team
@@ -185,8 +188,17 @@ namespace pokemon_rand.src.main.controller
             int singleRolls = player.singleRolls[player.currentTournamentId];
             int teamRolls = player.teamRolls[player.currentTournamentId];
             // get current score and standing
-            List<int> score = player.getScore(player.currentTournamentId);
-            return (player, host, team, singleRolls, teamRolls, score);
+            List<int> score = this.tournamentController.getPlayerScore(member);
+            List<Tuple<Player, int, int, int>> leaderboard = this.tournamentController.getLeaderboard(member);
+            int ranking = 0;
+
+            for (int i = 0; i < leaderboard.Count(); i++) {
+                if (member.Id == leaderboard[i].Item1.id) {
+                    ranking = i + 1;
+                }
+            }
+            //int ranking 
+            return new TrainerCard(player, host, team, singleRolls, teamRolls, score, ranking);
         }
 
         /// <summary>
@@ -200,7 +212,6 @@ namespace pokemon_rand.src.main.controller
             this.playersFileDAO.save();
             return result;
         }
-
 
     }
 }
