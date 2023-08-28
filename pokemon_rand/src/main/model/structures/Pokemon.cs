@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace pokemon_rand.src.main.model.structures
 {
-    public struct Pokemon
+    public class Pokemon
     {
         [JsonProperty("id")]
         public ulong id {get; private set;}

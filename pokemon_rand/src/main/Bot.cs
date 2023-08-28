@@ -8,6 +8,7 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using pokemon_rand.src.main.model.utilities;
 using pokemon_rand.src.main.view.discord.commands;
+using pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands;
 
 /// <summary>
 /// This is the class that holds the Discord Bot configuration
@@ -54,7 +55,8 @@ namespace pokemon_rand.src.main
 
             //set the commands of the bot
             commands = client.UseCommandsNext(commandConfig);
-            //commands.RegisterCommands<>();
+            commands.RegisterCommands<PlayerCommands>();
+            commands.RegisterCommands<TournamentCommands>();
 
             //Set up interactivity
             client.UseInteractivity(new InteractivityConfiguration()

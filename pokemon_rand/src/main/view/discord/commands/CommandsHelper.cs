@@ -10,8 +10,8 @@ namespace pokemon_rand.src.main.view.discord.commands
 {
     public static class CommandsHelper
     {
-        private static PlayerController playerController;
-        private static TournamentController tourneyController;
+        public static PlayerController playerController;
+        public static TournamentController tourneyController;
         public static Dictionary<string, string> responses = new Dictionary<string, string> {
             {"yes", ""},
             {"no", ""}

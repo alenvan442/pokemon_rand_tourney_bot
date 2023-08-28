@@ -12,13 +12,6 @@ namespace pokemon_rand.src.main.view.discord.commands
 {
     public class TournamentCommands : BaseCommandModule
     {
-
-        TournamentController tourneyController;
-
-        public TournamentCommands(TournamentController controller) {
-            this.tourneyController = controller;
-        }
-
         /// <summary>
         /// 
         /// </summary>
@@ -31,7 +24,7 @@ namespace pokemon_rand.src.main.view.discord.commands
                 return;
             }
 
-            if (!this.tourneyController.host(ctx.Member)) {
+            if (!CommandsHelper.tourneyController.host(ctx.Member)) {
                 await CommandsHelper.sendEmbed(ctx.Channel, "Unable to create a new tournament: You are already hosting a tournament!");
             }
 
@@ -52,7 +45,7 @@ namespace pokemon_rand.src.main.view.discord.commands
                 return;
             }
 
-            List<Tuple<Player, int, int, int>> leaderboard = this.tourneyController.getLeaderboard(ctx.Member);
+            List<Tuple<Player, int, int, int>> leaderboard = CommandsHelper.tourneyController.getLeaderboard(ctx.Member);
             
             string description = "";
 
@@ -103,7 +96,7 @@ namespace pokemon_rand.src.main.view.discord.commands
                 return;
             }
 
-            if (!tourneyController.isHost(ctx.Member, playerOne, playerOne)) {
+            if (!CommandsHelper.tourneyController.isHost(ctx.Member, playerOne, playerOne)) {
                 await CommandsHelper.sendEmbed(ctx.Channel, "Only the host of the tournament can use this command!");
                 return;
             }
@@ -128,7 +121,7 @@ namespace pokemon_rand.src.main.view.discord.commands
                 return;
             }
 
-            if (!this.tourneyController.setScore(ctx.Member, playerOne.Id, playerTwo.Id, score)) {
+            if (!CommandsHelper.tourneyController.setScore(ctx.Member, playerOne.Id, playerTwo.Id, score)) {
                 await CommandsHelper.sendEmbed(ctx.Channel, "Unable to set the match score: \n" +
                                     "The two players either already fought eachother, " + 
                                     "OR one or more of the players are not currently participating in this tournament.");
@@ -154,7 +147,7 @@ namespace pokemon_rand.src.main.view.discord.commands
                 return;
             }
 
-            List<string> scores = this.tourneyController.getHistory(ctx.Member, pageNumber);
+            List<string> scores = CommandsHelper.tourneyController.getHistory(ctx.Member, pageNumber);
 
             if (scores is null) {
                 await CommandsHelper.sendEmbed(ctx.Channel, "You are currently not in a tournament. \n" + 
@@ -206,7 +199,7 @@ namespace pokemon_rand.src.main.view.discord.commands
                 return;
             }
 
-            List<string> tournaments = this.tourneyController.getTournaments(ctx.Member, pageNumber);
+            List<string> tournaments = CommandsHelper.tourneyController.getTournaments(ctx.Member, pageNumber);
 
             if (tournaments is null || tournaments.Count() == 0) {
                 await CommandsHelper.sendEmbed(ctx.Channel, "There are currently no active tournaments.");

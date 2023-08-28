@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text.RegularExpressions;
 using DSharpPlus.Entities;
 using pokemon_rand.src.main.controller;
 using pokemon_rand.src.main.model.persistence;
@@ -33,12 +34,43 @@ namespace pokemon_rand.src.main.model.utilities
             pokemonFileDAO = new PokemonFileDAO(StaticUtil.pokemonJson, json);
             tournamentFileDAO = new TournamentFileDAO(StaticUtil.tournamentJson, json);
 
-            playerController = new PlayerController(playersFileDAO, pokemonFileDAO, tournamentFileDAO);
             tournamentController = new TournamentController(tournamentFileDAO, playersFileDAO);
+            playerController = new PlayerController(playersFileDAO, pokemonFileDAO, tournamentFileDAO, tournamentController);
 
             //exhibitionController = new ObjectController<Exhibition>(exhibitionFileDAO);
 
             CommandsHelper.setup(playerController, tournamentController);
+
+            // set up pokemom database
+            /*
+            Dictionary<ulong, List<ulong>> evoLines = new Dictionary<ulong, List<ulong>>();
+            Dictionary<ulong, string> names = new Dictionary<ulong, string>();
+
+            using(var streamReader = File.OpenText("pokemon_rand/data/pokemon_names")) {
+                var lines = streamReader.ReadToEnd().Split("\n");
+                foreach (var i in lines) {
+                    string line = i.Trim();
+                    string[] parts = line.Split(":");
+                    names.Add((ulong)Int32.Parse(parts[0]), parts[1]);
+                }
+            }
+
+            using (var streamReader = File.OpenText("pokemon_rand/data/Pokemon EvoLines.rtf")) {
+                var lines = streamReader.ReadToEnd().Split("\n");
+                foreach (var i in lines) {
+                    string line = Regex.Replace(i, "[()]", "").Trim();
+                    string[] ids = line.Split(",");
+                    List<ulong> evos = new List<ulong>();
+                    foreach (string id in ids) {
+                        evos.Add((ulong)Int32.Parse(id));
+                    }
+                    foreach (ulong id in evos) {
+                        if (!evoLines.TryGetValue(id, out _)) {
+                            evoLines.Add(id, evos);
+                        }
+                    }
+                }
+            }
 
             for (int i = 1; i <= 1010; i++) {
                 string imageId = i.ToString();
@@ -50,10 +82,11 @@ namespace pokemon_rand.src.main.model.utilities
                 }
 
                 string imagePath = "pokemon_rand/data/Pokemon Sprites/" + imageId + ".png";
-                Pokemon pokemon = new Pokemon((ulong)i, "", imagePath, null);
+                List<ulong> evoline = evoLines.TryGetValue((ulong)i, out _) ? evoLines[(ulong)i] : new List<ulong>();
+                Pokemon pokemon = new Pokemon((ulong)i, names[(ulong)i], imagePath, evoline);
                 pokemonFileDAO.addObject(pokemon, pokemon.id);
-            }
-            
-        }        
+            }  
+            */
+        }    
     }
 }

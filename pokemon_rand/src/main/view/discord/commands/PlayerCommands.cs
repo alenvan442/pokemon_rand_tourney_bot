@@ -14,14 +14,6 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
 {
     public class PlayerCommands : BaseCommandModule
     {
-
-        PlayerController playerController;
-        TournamentController tourneyController;
-        public PlayerCommands(PlayerController controller, TournamentController tourneyController) {
-            this.playerController = controller;
-            this.tourneyController = tourneyController;
-        }
-
         /// <summary>
         /// 
         /// </summary>
@@ -38,7 +30,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
             DiscordMember caller = ctx.Member;
 
             DiscordEmbedBuilder embed;
-            if (this.playerController.joinTournament(caller, host.Id)) {
+            if (CommandsHelper.playerController.joinTournament(caller, host.Id)) {
                 embed = CommandsHelper.createEmbed("Sucessfully joined " + host.Nickname + "'s tournament!");
             } else {
                 embed = CommandsHelper.createEmbed("You're already registered for this tournament!");
@@ -61,11 +53,11 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
             
             DiscordMember caller = ctx.Member;
             
-            if (this.playerController.viewTeam(caller).Count > 0) {
+            if (CommandsHelper.playerController.viewTeam(caller).Count > 0) {
                 // player already has a team
                 string description = "Are you sure you want to reroll your entire team?";
                 if (this.interactConfirm(ctx, description).Result) {
-                    if (!this.playerController.rollSix(caller)) {
+                    if (!CommandsHelper.playerController.rollSix(caller)) {
                         await CommandsHelper.sendEmbed(ctx.Channel, "You do not have any team rerolls left!");
                     } else {
                         await this.team(ctx, caller, true);
@@ -73,7 +65,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
                 }
             } else {
                 // player currently doe snot have a team
-                if (!this.playerController.rollSix(caller)) {
+                if (!CommandsHelper.playerController.rollSix(caller)) {
                     await CommandsHelper.sendEmbed(ctx.Channel, 
                             "You are currently not participating in any tournaments." +
                             "\nPlease join one using .join before rolling a team.");
@@ -108,7 +100,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
                     return;
                 }
 
-                List<Pokemon> team = this.playerController.viewTeam(caller);
+                List<Pokemon> team = CommandsHelper.playerController.viewTeam(caller);
                 if (!(team.Count > 0)) {
                     await CommandsHelper.sendEmbed(ctx.Channel, 
                             "You are currently not participating in any tournaments." +
@@ -119,7 +111,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
                 string targetRoll = team[index].name;
                 string description = "Are you sure you want to reroll " + targetRoll + "?"; 
                 if (this.interactConfirm(ctx, description).Result) {
-                    if (!this.playerController.rollSingle(caller, index)) {
+                    if (!CommandsHelper.playerController.rollSingle(caller, index)) {
                         await CommandsHelper.sendEmbed(ctx.Channel, "You do not have any single rerolls left!");
                     } else {
                         await this.team(ctx, caller, true);
@@ -144,13 +136,13 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
             }
 
             //check if host caller
-            if (!this.tourneyController.isHost(ctx.Member, target)) {
+            if (!CommandsHelper.tourneyController.isHost(ctx.Member, target)) {
                 await CommandsHelper.sendEmbed(ctx.Channel, "You are no tht ehost of the tournament, " + 
                                         "or the target player is currently not registered in your tournament");
                 return;
             }
 
-            if (!(this.playerController.viewTeam(target).Count > 0)) {
+            if (!(CommandsHelper.playerController.viewTeam(target).Count > 0)) {
                 // the player does not have a team to reroll
                 await CommandsHelper.sendEmbed(ctx.Channel, target.Nickname + " does not have a team to reroll.");
                 return;
@@ -158,7 +150,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
 
             if (index < 0) {
                 // force full team reroll
-                this.playerController.rollSix(target, true);
+                CommandsHelper.playerController.rollSix(target, true);
                 await this.team(ctx, target, true);
             } else {
                 if (index < 1 || index > 6 ) {
@@ -166,7 +158,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
                     return;
                 }
 
-                this.playerController.rollSingle(target, index, true);
+                CommandsHelper.playerController.rollSingle(target, index, true);
                 await this.team(ctx, target, true);
             } 
 
@@ -193,7 +185,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
                                 viewTarget.Nickname + "'s New Team" :
                                 viewTarget.Nickname + "'s Team";
 
-            List<Pokemon> team = this.playerController.viewTeam(viewTarget);
+            List<Pokemon> team = CommandsHelper.playerController.viewTeam(viewTarget);
 
             for (int i = 1; i < team.Count; i++) {
                 description += i + ". " + team[i-1].name + "\n";
@@ -224,7 +216,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
             string description = "Are you sure you want to leave this tournament?";
 
             if (this.interactConfirm(ctx, description).Result) {
-                if (this.playerController.leaveTournament(caller, target.Id)) {
+                if (CommandsHelper.playerController.leaveTournament(caller, target.Id)) {
                     await CommandsHelper.sendEmbed(ctx.Channel, "Left " + target + "'s tournament successfully.");
                 } else {
                     await CommandsHelper.sendEmbed(ctx.Channel,
@@ -249,7 +241,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
                 return;
             }
 
-            if (this.playerController.switchTournament(ctx.Member, host.Id)) {
+            if (CommandsHelper.playerController.switchTournament(ctx.Member, host.Id)) {
                 await CommandsHelper.sendEmbed(ctx.Channel, "Switched current tournament sucessfully/");
             } else {
                 await CommandsHelper.sendEmbed(ctx.Channel, "You are not registered in that tournament.");
@@ -265,7 +257,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
                 return;
             }
 
-            TrainerCard tcard = this.playerController.getTrainerCard(ctx.Member);
+            TrainerCard tcard = CommandsHelper.playerController.getTrainerCard(ctx.Member);
             
             if (tcard.player is null) {
                 await CommandsHelper.sendEmbed(ctx.Channel, "Unknown error occured");
