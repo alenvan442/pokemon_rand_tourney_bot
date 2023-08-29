@@ -13,8 +13,8 @@ namespace pokemon_rand.src.main.view.discord.commands
         public static PlayerController playerController;
         public static TournamentController tourneyController;
         public static Dictionary<string, string> responses = new Dictionary<string, string> {
-            {"yes", ""},
-            {"no", ""}
+            {"yes", ":white_check_mark:"},
+            {"no", ":no_entry_sign:"}
         };
 
         /// <summary>

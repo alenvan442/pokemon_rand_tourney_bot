@@ -89,7 +89,7 @@ namespace pokemon_rand.src.main
         /// <returns> a task </returns>
         public async Task OnGuildAvailable(DiscordClient client, GuildCreateEventArgs e)
         {
-            LoadDAO.load();
+            LoadDAO.addPlayers(e.Guild);
             await Task.CompletedTask;
         }
 

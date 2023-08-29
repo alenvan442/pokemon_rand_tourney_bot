@@ -82,6 +82,7 @@ namespace pokemon_rand.src.main.model.structures
             if (this.tournaments.Contains(id)) {
                 return false;
             }
+            this.currentTournamentId = id;
             this.tournaments.Add(id);
             this.teamRolls.Add(id, 2);
             this.singleRolls.Add(id, 2);

@@ -17,11 +17,14 @@ namespace pokemon_rand.src.main.model.structures
                                                              // x is player 1, y is player 2 and the second slot
                                                              // is either a 0, 1, or 2 for lose, win, tie
                                                              // reading (x, 0, y) is x lost to y
+        [JsonProperty("pastPlayers")]
+        public List<ulong> pastPlayers {get; private set;}
 
-        public Tournament(List<ulong> Players, ulong host, List<List<ulong>> history) {
+        public Tournament(List<ulong> Players, ulong host, List<List<ulong>> history, List<ulong> pastPlayers) {
             this.players = Players;
             this.hostId = host;
             this.history = history;
+            this.pastPlayers = pastPlayers;
         }
  
         /// <summary>
@@ -32,7 +35,10 @@ namespace pokemon_rand.src.main.model.structures
         ///     true: remove success
         ///     false: player is not registered in the tournament
         /// </returns>
-        public bool removePlayer(ulong id) {
+        public bool removePlayer(ulong id, bool add = true) {
+            if (add == true) {
+                this.pastPlayers.Add(id);
+            }
             return this.players.Remove(id);
         }
 
@@ -44,9 +50,10 @@ namespace pokemon_rand.src.main.model.structures
         ///     true: add success
         ///     false: player already in tournament  
         /// </returns>
-        public bool addPlayer(Player player) {
-            if (this.players.Contains(player.id)) {return false;}
-            this.players.Add(player.id);
+        public bool addPlayer(ulong playerId) {
+            if (this.pastPlayers.Contains(playerId)) {return false;}
+            if (this.players.Contains(playerId)) {return false;}
+            this.players.Add(playerId);
             return true;
         }
 

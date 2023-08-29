@@ -28,14 +28,17 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
             }
 
             DiscordMember caller = ctx.Member;
-
             DiscordEmbedBuilder embed;
-            if (CommandsHelper.playerController.joinTournament(caller, host.Id)) {
-                embed = CommandsHelper.createEmbed("Sucessfully joined " + host.Nickname + "'s tournament!");
+            if (CommandsHelper.tourneyController.join(caller.Id, host.Id)) { 
+                if (CommandsHelper.playerController.joinTournament(caller, host.Id)) {
+                    embed = CommandsHelper.createEmbed("Sucessfully joined " + host.DisplayName + "'s tournament!");
+                } else {
+                    CommandsHelper.tourneyController.leave(caller.Id, host.Id, false);
+                    embed = CommandsHelper.createEmbed("You're already registered for this tournament!");
+                }
             } else {
-                embed = CommandsHelper.createEmbed("You're already registered for this tournament!");
+                embed = CommandsHelper.createEmbed("You're either already registered for this tournament, \nor recently left this tournament and can not re-join.");
             }
-
             await ctx.Channel.SendMessageAsync(embed);
         }
 
@@ -144,7 +147,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
 
             if (!(CommandsHelper.playerController.viewTeam(target).Count > 0)) {
                 // the player does not have a team to reroll
-                await CommandsHelper.sendEmbed(ctx.Channel, target.Nickname + " does not have a team to reroll.");
+                await CommandsHelper.sendEmbed(ctx.Channel, target.DisplayName + " does not have a team to reroll.");
                 return;
             }
 
@@ -182,8 +185,8 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
             DiscordMember viewTarget = (target is null) ? ctx.Member : target;
             string description = "";
             string title = _new ?   
-                                viewTarget.Nickname + "'s New Team" :
-                                viewTarget.Nickname + "'s Team";
+                                viewTarget.DisplayName + "'s New Team" :
+                                viewTarget.DisplayName + "'s Team";
 
             List<Pokemon> team = CommandsHelper.playerController.viewTeam(viewTarget);
 
@@ -216,15 +219,22 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
             string description = "Are you sure you want to leave this tournament?";
 
             if (this.interactConfirm(ctx, description).Result) {
-                if (CommandsHelper.playerController.leaveTournament(caller, target.Id)) {
-                    await CommandsHelper.sendEmbed(ctx.Channel, "Left " + target + "'s tournament successfully.");
-                } else {
-                    await CommandsHelper.sendEmbed(ctx.Channel,
-                                "You are either not currently a participant of the requested tournament, " +
-                                "or that player is not hosting a tournament.");
-                }
-            }
+                string feedback = "";
+                if (CommandsHelper.tourneyController.leave(caller.Id, target.Id)) {
 
+                    if (CommandsHelper.playerController.leaveTournament(caller, target.Id)) {
+
+                        feedback = "Left " + target + "'s tournament successfully.";
+                    } else {
+                        feedback = "You are either not currently a participant of the requested tournament, " +
+                                    "or that player is not hosting a tournament.";
+                    }
+                } else {
+                    feedback = "You are either not currently a participant of the requested tournament, " +
+                                    "or that player is not hosting a tournament.";
+                }
+                await CommandsHelper.sendEmbed(ctx.Channel, feedback);
+            }
             await Task.CompletedTask;
         }
 
@@ -317,22 +327,26 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         private async Task<bool> interactConfirm(CommandContext ctx, string description) {
             DiscordMember caller = ctx.Member;
             var message = await ctx.Channel.SendMessageAsync(CommandsHelper.createEmbed(description));
-                
+            
+            List<DiscordEmoji> emojis = new List<DiscordEmoji>();
             foreach (var i in CommandsHelper.responses.Values) {
-                await message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, i));
+                DiscordEmoji curr = DiscordEmoji.FromName(ctx.Client, i);
+                emojis.Add(curr);
+                await message.CreateReactionAsync(curr);
             }
 
             var interactivity = ctx.Client.GetInteractivity();
 
             var response = await interactivity.WaitForReactionAsync(x =>
-                x.User == caller &&
+                x.User == ctx.User &&
                 x.Message == message &&
-                CommandsHelper.responses.ContainsValue(x.Emoji.Name)
+                (x.Emoji == emojis[0] ||
+                 x.Emoji == emojis[1])
             );
 
-            if (response.Result.Emoji.Name == CommandsHelper.responses["yes"]) {
+            if (response.Result.Emoji == emojis[0]) {
                 return true;
-            } else if (response.Result.Emoji.Name == CommandsHelper.responses["no"]) {
+            } else if (response.Result.Emoji == emojis[1]) {
                 return false;
             } else {
                 await CommandsHelper.sendEmbed(ctx.Channel, "Unknown interactivity error occured.");

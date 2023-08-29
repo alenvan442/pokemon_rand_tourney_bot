@@ -1,0 +1,50 @@
+{
+  "292953664492929025": {
+    "ID": 292953664492929025,
+    "Name": "UnbelievaBoat",
+    "currentTournamentId": 0,
+    "tournaments": [],
+    "pokemon": {},
+    "teamRolls": {},
+    "singleRolls": {},
+    "history": {}
+  },
+  "336759879765065730": {
+    "ID": 336759879765065730,
+    "Name": "sobdh",
+    "currentTournamentId": 0,
+    "tournaments": [],
+    "pokemon": {
+      "336759879765065730": []
+    },
+    "teamRolls": {
+      "336759879765065730": 2
+    },
+    "singleRolls": {
+      "336759879765065730": 2
+    },
+    "history": {
+      "336759879765065730": {}
+    }
+  },
+  "719239031296098394": {
+    "ID": 719239031296098394,
+    "Name": "Sobdh123",
+    "currentTournamentId": 0,
+    "tournaments": [],
+    "pokemon": {},
+    "teamRolls": {},
+    "singleRolls": {},
+    "history": {}
+  },
+  "1145730282754945054": {
+    "ID": 1145730282754945054,
+    "Name": "Ash",
+    "currentTournamentId": 0,
+    "tournaments": [],
+    "pokemon": {},
+    "teamRolls": {},
+    "singleRolls": {},
+    "history": {}
+  }
+}

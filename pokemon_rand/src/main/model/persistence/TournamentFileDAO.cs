@@ -22,10 +22,32 @@ namespace pokemon_rand.src.main.model.persistence
                 return false;
             }
 
-            Tournament newTourney = new Tournament(new List<ulong>(), hostId, new List<List<ulong>>());
+            Tournament newTourney = new Tournament(new List<ulong>(), hostId, new List<List<ulong>>(), new List<ulong>());
             this.addObject(newTourney, hostId);
             save();
             return true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tourneyId"></param>
+        /// <param name="playerId"></param>
+        /// <returns></returns>
+        public bool join(ulong tourneyId, ulong playerId) {
+            Tournament curr = this.getObject(tourneyId);
+            return curr.addPlayer(playerId);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tourneyId"></param>
+        /// <param name="playerid"></param>
+        /// <returns></returns>
+        public bool leave(ulong tourneyId, ulong playerid, bool add = true) {
+            Tournament curr = this.getObject(tourneyId);
+            return curr.removePlayer(playerid, add);
         }
 
         /// <summary>

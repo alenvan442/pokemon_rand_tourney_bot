@@ -69,6 +69,14 @@ namespace pokemon_rand.src.main.controller
                                                 // OR are you the host of a tournament both participants are in.
         }
 
+        public bool join(ulong target, ulong tourneyId) {
+            return this.tournamentDAO.join(tourneyId, target);
+        }
+
+        public bool leave(ulong target, ulong tourneyId, bool add = true) {
+            return this.tournamentDAO.leave(tourneyId, target, add);
+        }
+
         /// <summary>
         /// sets the result of a match, only the host can do this
         /// the match is read with player one being the main player, example:
@@ -241,6 +249,11 @@ namespace pokemon_rand.src.main.controller
             return totalPlayers - totalMatched;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="scores"></param>
+        /// <returns></returns>
         private List<ulong> sortLeaderboard(Dictionary<Player, List<int>> scores) {
             List<ulong> sorted = new List<ulong>();
             List<Tuple<ulong, int>> list = new List<Tuple<ulong, int>>();
@@ -264,6 +277,11 @@ namespace pokemon_rand.src.main.controller
             return sorted;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
         private List<Tuple<ulong, int>> sortLeaderboardHelper(List<Tuple<ulong, int>> list) {
             if (list.Count() < 3) {
                 return list;

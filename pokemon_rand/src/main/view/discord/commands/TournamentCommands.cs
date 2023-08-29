@@ -129,7 +129,7 @@ namespace pokemon_rand.src.main.view.discord.commands
             }
 
             await CommandsHelper.sendEmbed(ctx.Channel, "Match score updated: \n" + 
-                                        playerOne.Nickname + " " + result + " against " + playerTwo.Nickname);
+                                        playerOne.DisplayName + " " + result + " against " + playerTwo.DisplayName);
 
             await Task.CompletedTask;
         }
