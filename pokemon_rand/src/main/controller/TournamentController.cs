@@ -109,14 +109,12 @@ namespace pokemon_rand.src.main.controller
             result = this.playerDAO.setScore(tourneyId, playerOne, playerTwo, score);
 
             if (!result) {
-                this.playerDAO.deleteScore(tourneyId, playerOne, playerTwo);
                 return false;
             }
 
             result = this.tournamentDAO.setScore(tourneyId, playerOne, playerTwo, score);
 
             if (!result) {
-                this.tournamentDAO.deleteScore(tourneyId, playerOne, playerTwo);
                 this.playerDAO.deleteScore(tourneyId, playerOne, playerTwo);
                 return false;
             }

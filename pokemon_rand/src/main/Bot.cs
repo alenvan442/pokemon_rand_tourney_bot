@@ -92,7 +92,5 @@ namespace pokemon_rand.src.main
             LoadDAO.addPlayers(e.Guild);
             await Task.CompletedTask;
         }
-
-
     }
 }

@@ -1,0 +1,129 @@
+{
+  "292953664492929025": {
+    "ID": 292953664492929025,
+    "Name": "UnbelievaBoat",
+    "currentTournamentId": 0,
+    "tournaments": [],
+    "pokemon": {},
+    "teamRolls": {},
+    "singleRolls": {},
+    "history": {}
+  },
+  "336759879765065730": {
+    "ID": 336759879765065730,
+    "Name": "sobdh",
+    "currentTournamentId": 336759879765065730,
+    "tournaments": [
+      336759879765065730
+    ],
+    "pokemon": {
+      "336759879765065730": []
+    },
+    "teamRolls": {
+      "336759879765065730": 2
+    },
+    "singleRolls": {
+      "336759879765065730": 2
+    },
+    "history": {
+      "336759879765065730": {
+        "472256680152006660": 0,
+        "363537272739463168": 0
+      }
+    }
+  },
+  "719239031296098394": {
+    "ID": 719239031296098394,
+    "Name": "Sobdh123",
+    "currentTournamentId": 0,
+    "tournaments": [],
+    "pokemon": {},
+    "teamRolls": {},
+    "singleRolls": {},
+    "history": {}
+  },
+  "1145730282754945054": {
+    "ID": 1145730282754945054,
+    "Name": "Ash",
+    "currentTournamentId": 0,
+    "tournaments": [],
+    "pokemon": {},
+    "teamRolls": {},
+    "singleRolls": {},
+    "history": {}
+  },
+  "159985870458322944": {
+    "ID": 159985870458322944,
+    "Name": "MEE6",
+    "currentTournamentId": 0,
+    "tournaments": [],
+    "pokemon": {},
+    "teamRolls": {},
+    "singleRolls": {},
+    "history": {}
+  },
+  "363537272739463168": {
+    "ID": 363537272739463168,
+    "Name": "starbeary",
+    "currentTournamentId": 336759879765065730,
+    "tournaments": [
+      336759879765065730
+    ],
+    "pokemon": {
+      "336759879765065730": []
+    },
+    "teamRolls": {
+      "336759879765065730": 2
+    },
+    "singleRolls": {
+      "336759879765065730": 2
+    },
+    "history": {
+      "336759879765065730": {
+        "336759879765065730": 1
+      }
+    }
+  },
+  "472256680152006660": {
+    "ID": 472256680152006660,
+    "Name": "snowfa",
+    "currentTournamentId": 336759879765065730,
+    "tournaments": [
+      336759879765065730
+    ],
+    "pokemon": {
+      "336759879765065730": []
+    },
+    "teamRolls": {
+      "336759879765065730": 2
+    },
+    "singleRolls": {
+      "336759879765065730": 2
+    },
+    "history": {
+      "336759879765065730": {
+        "336759879765065730": 1
+      }
+    }
+  },
+  "789314370999287808": {
+    "ID": 789314370999287808,
+    "Name": "Miyu",
+    "currentTournamentId": 0,
+    "tournaments": [],
+    "pokemon": {},
+    "teamRolls": {},
+    "singleRolls": {},
+    "history": {}
+  },
+  "924122381419692082": {
+    "ID": 924122381419692082,
+    "Name": "FarmVille",
+    "currentTournamentId": 0,
+    "tournaments": [],
+    "pokemon": {},
+    "teamRolls": {},
+    "singleRolls": {},
+    "history": {}
+  }
+}

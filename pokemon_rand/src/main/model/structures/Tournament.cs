@@ -94,8 +94,6 @@ namespace pokemon_rand.src.main.model.structures
                 return false; //invalid result
             }
 
-            
-
             this.history.Add(new List<ulong>() {playerOne, (ulong) score, playerTwo});
             return true;
         }
