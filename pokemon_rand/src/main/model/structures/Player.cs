@@ -220,6 +220,8 @@ namespace pokemon_rand.src.main.model.structures
                 return false; //invalid value
             }
 
+            this.singleRolls[tourneyId] = 0;
+            this.teamRolls[tourneyId] = 0;
             this.history[tourneyId].Add(opponentId, score);
             return true;
         }
