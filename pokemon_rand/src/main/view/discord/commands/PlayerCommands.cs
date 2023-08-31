@@ -22,8 +22,10 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         /// <param name="host"></param>
         /// <returns></returns>
         [Command("join")]
-        [Description("")]
-        public async Task join(CommandContext ctx, DiscordMember host) {
+        [Description("Join a target tournament.")]
+        public async Task join(CommandContext ctx, 
+                                [Description("The host of the tournament to join: input the name of the host.")]
+                                DiscordMember host) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
@@ -53,8 +55,12 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         /// <param name="host"></param>
         /// <returns></returns>
         [Command("forcejoin")]
-        [Description("")]
-        public async Task forcejoin(CommandContext ctx, DiscordMember target, DiscordMember host) {
+        [Description("HOST ONLY Force a player to join a tournament.")]
+        public async Task forcejoin(CommandContext ctx, 
+                                    [Description("The target player to join: input the name of the player.")]
+                                    DiscordMember target,
+                                    [Description("The host of the tournament to join: input the name of the host.")]
+                                    DiscordMember host) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
@@ -85,7 +91,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         /// <param name="ctx"></param>
         /// <returns></returns>
         [Command("roll")]
-        [Description("")]
+        [Description("Roll or reroll your whole team.")]
         public async Task roll(CommandContext ctx) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
@@ -123,8 +129,11 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         /// <param name="index"></param>
         /// <returns></returns>
         [Command("reroll")]
-        [Description("")]
-        public async Task reroll(CommandContext ctx, int index = -1) {
+        [Description("Reroll either your whole team or a single selection.")]
+        public async Task reroll(CommandContext ctx, 
+                                    [Description("The index between 1 and 6 of which pokemon you want to reroll. " +
+                                    "Leave this empty if you want to reroll the whole team")]
+                                    int index = -1) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
@@ -169,8 +178,13 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         /// <param name="index"></param>
         /// <returns></returns>
         [Command("forcereroll")]
-        [Description("")]
-        public async Task forcereroll(CommandContext ctx, DiscordMember target, int index = -1) {
+        [Description("HOST ONLY Force a reroll on a target player.")]
+        public async Task forcereroll(CommandContext ctx,
+                                        [Description("The target player to reroll: input the name of the player.")]
+                                        DiscordMember target,
+                                        [Description("The index between 1 and 6 of which pokemon you want to reroll. " +
+                                        "Leave this empty if you want to reroll the whole team")]
+                                        int index = -1) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
@@ -218,8 +232,13 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         /// <param name="_new"></param>
         /// <returns></returns>
         [Command("team")]
-        [Description("")]
-        public async Task team(CommandContext ctx, DiscordMember target = null, bool _new = false) {
+        [Description("View you team for your current tournament.")]
+        public async Task team(CommandContext ctx, 
+                                [Description("Which player's team in your current tournament would you like to view, leave empty for yourself. " +
+                                "Input the name of the player.")]
+                                DiscordMember target = null, 
+                                [Description("Disregard this.")]
+                                bool _new = false) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
@@ -257,8 +276,10 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         /// <param name="target"></param>
         /// <returns></returns>
         [Command("leave")]
-        [Description("")]
-        public async Task leave(CommandContext ctx, DiscordMember target) {
+        [Description("Leave a target tournament.")]
+        public async Task leave(CommandContext ctx, 
+                                [Description("Which tournament you would like to leave: input the name of the host.")]
+                                DiscordMember target) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
@@ -293,8 +314,10 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         /// <param name="host"></param>
         /// <returns></returns>
         [Command("switch")]
-        [Description("")]
-        public async Task _switch(CommandContext ctx, DiscordMember host) {
+        [Description("Switch between tournaments.")]
+        public async Task _switch(CommandContext ctx, 
+                                    [Description("The target tournament to switch to: input th ename of the host.")]
+                                    DiscordMember host) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
@@ -309,7 +332,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
         }
 
         [Command("tcard")]
-        [Description("")]
+        [Description("View your trainer card for your current tournament.")]
         public async Task tcard(CommandContext ctx) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;

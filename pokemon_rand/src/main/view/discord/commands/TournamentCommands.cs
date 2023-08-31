@@ -18,7 +18,7 @@ namespace pokemon_rand.src.main.view.discord.commands
         /// <param name="ctx"></param>
         /// <returns></returns>
         [Command("host")]
-        [Description("")]
+        [Description("Host your own tournament.")]
         public async Task host(CommandContext ctx) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
@@ -39,8 +39,10 @@ namespace pokemon_rand.src.main.view.discord.commands
         /// <param name="pageNumber"></param>
         /// <returns></returns>
         [Command("leaderboard")]
-        [Description("")]
-        public async Task leaderboard(CommandContext ctx, int pageNumber = 1) {
+        [Description("Get the leaderboard of the current tournament your in.")]
+        public async Task leaderboard(CommandContext ctx,
+                                        [Description("The page you would like to view, defaults to 1 if empty.")]
+                                        int pageNumber = 1) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
@@ -95,8 +97,14 @@ namespace pokemon_rand.src.main.view.discord.commands
         /// <param name="result"></param>
         /// <returns></returns>
         [Command("match")]
-        [Description("")]
-        public async Task match(CommandContext ctx, DiscordMember playerOne, DiscordMember playerTwo, string result) {
+        [Description("HOST ONLY Report the results of a match.")]
+        public async Task match(CommandContext ctx,
+                                [Description("The name of the first player participating in the match.")]
+                                DiscordMember playerOne, 
+                                [Description("The name of the second player participating in the match.")]
+                                DiscordMember playerTwo, 
+                                [Description("The result of the match in which player1 w/l/t against player2.")]
+                                string result) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
@@ -146,8 +154,10 @@ namespace pokemon_rand.src.main.view.discord.commands
         /// <param name="pageNumber"></param>
         /// <returns></returns>
         [Command("history")]
-        [Description("")]
-        public async Task history(CommandContext ctx, int pageNumber = 1) {
+        [Description("See the history of match outcomes in your current tournament.")]
+        public async Task history(CommandContext ctx, 
+                                    [Description("The page you would like to view, defaults to 1 if empty.")]
+                                    int pageNumber = 1) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
@@ -204,8 +214,10 @@ namespace pokemon_rand.src.main.view.discord.commands
         /// <param name="pageNumber"></param>
         /// <returns></returns>
         [Command("tournaments")]
-        [Description("")]
-        public async Task tournaments(CommandContext ctx, int pageNumber = 1) {
+        [Description("Get a list of all available tournaments")]
+        public async Task tournaments(CommandContext ctx, 
+                                        [Description("The page you would like to view, defaults to 1 if empty.")]
+                                        int pageNumber = 1) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
