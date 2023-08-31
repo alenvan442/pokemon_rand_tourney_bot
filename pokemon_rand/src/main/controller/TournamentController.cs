@@ -301,10 +301,10 @@ namespace pokemon_rand.src.main.controller
                 if (middle.Item1 == i.Item1) {
                     continue;
                 }
-                if (i.Item2 > middle.Item2) {
-                    second.Add(i);
-                } else if (i.Item2 < middle.Item2 || i.Item2 == middle.Item2) {
+                if (i.Item2 > middle.Item2 || i.Item2 == middle.Item2) {
                     first.Add(i);
+                } else if (i.Item2 < middle.Item2) {
+                    second.Add(i);
                 }
             }
 
