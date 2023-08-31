@@ -31,8 +31,6 @@ namespace pokemon_rand.src.main.controller
             this.pokemonDAO = pokemonDAO;
             this.tournamentDAO = tournamentDAO;
             this.tournamentController = tournamentController;
-            //this.eventsFileDAO = eventsDAO;
-
         }
 
         /// <summary>
@@ -56,8 +54,6 @@ namespace pokemon_rand.src.main.controller
         /// </returns>
         public bool joinTournament(DiscordMember member, ulong tourneyId) {
             return playersFileDAO.joinTournament(member, tourneyId);
-            // TODO check if the player previously left to ensure they can't rejoin
-            // TODO add the player to the tournament itself
             // TODO do an override for the host in case people are allowed to join back in due to a mistake
         }
 
@@ -120,11 +116,14 @@ namespace pokemon_rand.src.main.controller
         public bool leaveTournament(DiscordMember member, ulong tourneyId) {
             Player curr = playersFileDAO.getObject(member.Id);
             bool result = curr.leaveTournament(tourneyId);
-            this.playersFileDAO.save();
-            // TODO remove the player from the tournament object
-            // TODO loop through all players and delete their matchup with the leaving player
-            // TODO remove tournament related attributes form the players
-            // TODO create a "pastPlayers" attribute for tournaments to ensure people can't rejoin after leaving
+            if (result) {
+                List<ulong> playerIds = this.tournamentController.getObject(tourneyId).players;
+                foreach (var i in playerIds) {
+                    Player player = playersFileDAO.getObject(i);
+                    player.removeRecords(tourneyId, curr.id);
+                }
+                this.playersFileDAO.save();
+            }
             return result;
         }
 

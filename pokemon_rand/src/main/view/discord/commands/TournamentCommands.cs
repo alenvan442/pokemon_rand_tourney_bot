@@ -40,7 +40,7 @@ namespace pokemon_rand.src.main.view.discord.commands
         /// <returns></returns>
         [Command("leaderboard")]
         [Description("")]
-        public async Task leaderboard(CommandContext ctx, int pageNumber) {
+        public async Task leaderboard(CommandContext ctx, int pageNumber = 1) {
             if (!CommandsHelper.callerCheck(ctx).Result) {
                 return;
             }
@@ -66,15 +66,20 @@ namespace pokemon_rand.src.main.view.discord.commands
 
             int index = 10 * (pageNumber - 1);
 
-            leaderboard = leaderboard.GetRange(min, max);
+            if (leaderboard.Count() == 0) {
+                description = "This tournament currently does not have any players.";
+            } else {
+                leaderboard = leaderboard.GetRange(min, max);
 
-            foreach (Tuple<Player, int, int, int> i in leaderboard) {
-                description += index + ". " + i.Item1.name + ": " + i.Item2 + "W/" + i.Item3 + "L/" + i.Item4 + "T\n";
+                foreach (Tuple<Player, int, int, int> i in leaderboard) {
+                    description += index + ". " + i.Item1.name + ": " + i.Item2 + "W/" + i.Item3 + "L/" + i.Item4 + "T\n";
+                }
             }
 
             DiscordEmbedBuilder embed = CommandsHelper.createEmbed(description);
             embed.Title = "Leaderboard";
-            embed.Footer.Text = "Page " + pageNumber;
+            embed.Footer = new DiscordEmbedBuilder.EmbedFooter();
+            embed.Footer.Text = "Page: " + pageNumber;
 
             await ctx.Channel.SendMessageAsync(embed);
 
@@ -170,16 +175,22 @@ namespace pokemon_rand.src.main.view.discord.commands
                 max = 10;
             }
 
-            scores = scores.GetRange(min, max);
-
             string history = "";
 
-            foreach (string i in scores) {
-                history += i + "\n";
+            if (scores.Count == 0) {
+                history = "This tournament has yet to have a match completed.";
+            } else {
+                scores = scores.GetRange(min, max);
+
+                foreach (string i in scores) {
+                    history += i + "\n";
+                }
             }
 
             DiscordEmbedBuilder embed = CommandsHelper.createEmbed(history);
             embed.Title = "Tournament History";
+            embed.Footer = new DiscordEmbedBuilder.EmbedFooter();
+            embed.Footer.Text = "Page: " + pageNumber;
 
             await ctx.Channel.SendMessageAsync(embed);
 

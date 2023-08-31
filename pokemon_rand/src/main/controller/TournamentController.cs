@@ -47,6 +47,14 @@ namespace pokemon_rand.src.main.controller
             return currentTourney.hostId == caller.id; 
         }
 
+        // used for force join
+        public bool isHost(DiscordMember target, ulong tourneyId) {
+            Player caller = this.playerDAO.getObject(target.Id);
+            Tournament currentTournament = this.getObject(tourneyId);
+            return currentTournament is null ? false : caller.id == currentTournament.hostId;
+        }
+
+        // used for force reroll
         public bool isHost(DiscordMember target, DiscordMember player) {
             Player caller = this.playerDAO.getObject(target.Id);
             Player reference = this.playerDAO.getObject(player.Id);
@@ -69,8 +77,8 @@ namespace pokemon_rand.src.main.controller
                                                 // OR are you the host of a tournament both participants are in.
         }
 
-        public bool join(ulong target, ulong tourneyId) {
-            return this.tournamentDAO.join(tourneyId, target);
+        public bool join(ulong target, ulong tourneyId, bool ovRide = false) {
+            return this.tournamentDAO.join(tourneyId, target, ovRide);
         }
 
         public bool leave(ulong target, ulong tourneyId, bool add = true) {
@@ -98,14 +106,14 @@ namespace pokemon_rand.src.main.controller
             ulong tourneyId = caller.Id;
             bool result;
 
-            result = this.tournamentDAO.setScore(tourneyId, playerOne, playerTwo, score);
+            result = this.playerDAO.setScore(tourneyId, playerOne, playerTwo, score);
 
             if (!result) {
-                this.tournamentDAO.deleteScore(tourneyId, playerOne, playerTwo);
+                this.playerDAO.deleteScore(tourneyId, playerOne, playerTwo);
                 return false;
             }
 
-            result = this.playerDAO.setScore(tourneyId, playerOne, playerTwo, score);
+            result = this.tournamentDAO.setScore(tourneyId, playerOne, playerTwo, score);
 
             if (!result) {
                 this.tournamentDAO.deleteScore(tourneyId, playerOne, playerTwo);
@@ -244,7 +252,7 @@ namespace pokemon_rand.src.main.controller
             //      [0]: number wins
             //      [1]: number losses
             //      [2]: number ties
-            int totalPlayers = tourney.players.Count();
+            int totalPlayers = tourney.players.Count() - 1; //subtract one so it does not include yourself
             int totalMatched = scores[0] + scores[1] + scores[2];
             return totalPlayers - totalMatched;
         }
@@ -292,6 +300,9 @@ namespace pokemon_rand.src.main.controller
             Tuple<ulong, int> middle = list[list.Count / 2];
 
             foreach (Tuple<ulong, int> i in list) {
+                if (middle.Item1 == i.Item1) {
+                    continue;
+                }
                 if (i.Item2 > middle.Item2) {
                     second.Add(i);
                 } else if (i.Item2 < middle.Item2 || i.Item2 == middle.Item2) {

@@ -34,9 +34,12 @@ namespace pokemon_rand.src.main.model.persistence
         /// <param name="tourneyId"></param>
         /// <param name="playerId"></param>
         /// <returns></returns>
-        public bool join(ulong tourneyId, ulong playerId) {
+        public bool join(ulong tourneyId, ulong playerId, bool ovRide) {
             Tournament curr = this.getObject(tourneyId);
-            return curr.addPlayer(playerId);
+            if (curr is null) {return false;}
+            bool result = curr.addPlayer(playerId, ovRide);
+            save();
+            return result;
         }
 
         /// <summary>
@@ -45,9 +48,11 @@ namespace pokemon_rand.src.main.model.persistence
         /// <param name="tourneyId"></param>
         /// <param name="playerid"></param>
         /// <returns></returns>
-        public bool leave(ulong tourneyId, ulong playerid, bool add = true) {
+        public bool leave(ulong tourneyId, ulong playerid, bool add) {
             Tournament curr = this.getObject(tourneyId);
-            return curr.removePlayer(playerid, add);
+            bool result = curr.removePlayer(playerid, add);
+            save();
+            return result;
         }
 
         /// <summary>

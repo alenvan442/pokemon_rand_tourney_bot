@@ -186,6 +186,10 @@ namespace pokemon_rand.src.main.model.structures
             }
 
             this.tournaments.Remove(tourneyId);
+            this.pokemon.Remove(tourneyId);
+            this.singleRolls.Remove(tourneyId);
+            this.teamRolls.Remove(tourneyId);
+            this.history.Remove(tourneyId);
 
             // if not registered in any other tournament, then the user is not registered in any
             if (this.tournaments.Count == 0) {
@@ -256,7 +260,11 @@ namespace pokemon_rand.src.main.model.structures
         ///     false: have yet to fight the opponent
         /// </returns>
         public bool alreadyFought(ulong tourneyId, ulong opponentId) {
-            return this.history.ContainsKey(opponentId);
+            return this.history[tourneyId].ContainsKey(opponentId);
+        }
+
+        public void removeRecords(ulong tourneyId, ulong id) {
+            this.history[tourneyId].Remove(id);            
         }
         
 

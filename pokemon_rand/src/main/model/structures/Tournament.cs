@@ -37,9 +37,25 @@ namespace pokemon_rand.src.main.model.structures
         /// </returns>
         public bool removePlayer(ulong id, bool add = true) {
             if (add == true) {
-                this.pastPlayers.Add(id);
+                if (!this.pastPlayers.Contains(id)) {
+                    this.pastPlayers.Add(id);
+                }
             }
-            return this.players.Remove(id);
+
+            if (this.players.Remove(id)) {
+                List<List<ulong>> removes = new List<List<ulong>>();
+                foreach (var i in this.history) {
+                    if (i.Contains(id)) {
+                        removes.Add(i);
+                    }
+                }
+                foreach (var i in removes) {
+                    this.history.Remove(i);
+                }
+                return true;
+            } else {
+                return false;
+            }
         }
 
         /// <summary>
@@ -50,8 +66,10 @@ namespace pokemon_rand.src.main.model.structures
         ///     true: add success
         ///     false: player already in tournament  
         /// </returns>
-        public bool addPlayer(ulong playerId) {
-            if (this.pastPlayers.Contains(playerId)) {return false;}
+        public bool addPlayer(ulong playerId, bool ovRide) {
+            if (ovRide == false && this.pastPlayers.Contains(playerId)) {
+                return false;
+            }
             if (this.players.Contains(playerId)) {return false;}
             this.players.Add(playerId);
             return true;
@@ -75,6 +93,8 @@ namespace pokemon_rand.src.main.model.structures
             if (score < 0 || score > 2) {
                 return false; //invalid result
             }
+
+            
 
             this.history.Add(new List<ulong>() {playerOne, (ulong) score, playerTwo});
             return true;

@@ -6,6 +6,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.SlashCommands;
 using pokemon_rand.src.main.controller;
 using pokemon_rand.src.main.model.structures;
 using pokemon_rand.src.main.view.discord.commands;
@@ -37,7 +38,43 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
                     embed = CommandsHelper.createEmbed("You're already registered for this tournament!");
                 }
             } else {
-                embed = CommandsHelper.createEmbed("You're either already registered for this tournament, \nor recently left this tournament and can not re-join.");
+                embed = CommandsHelper.createEmbed("You're either already registered for this tournament, " +
+                                                    "\nrecently left this tournament and can not re-join, " +
+                                                    "\nor the tournament does not exist.");
+            }
+            await ctx.Channel.SendMessageAsync(embed);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <param name="target"></param>
+        /// <param name="host"></param>
+        /// <returns></returns>
+        [Command("forcejoin")]
+        [Description("")]
+        public async Task forcejoin(CommandContext ctx, DiscordMember target, DiscordMember host) {
+            if (!CommandsHelper.callerCheck(ctx).Result) {
+                return;
+            }
+
+            //check if host caller
+            if (!CommandsHelper.tourneyController.isHost(ctx.Member, host.Id)) {
+                await CommandsHelper.sendEmbed(ctx.Channel, "You are not the host of the tournament, ");
+                return;
+            }
+
+            DiscordEmbedBuilder embed;
+            if (CommandsHelper.tourneyController.join(target.Id, host.Id, true)) { 
+                if (CommandsHelper.playerController.joinTournament(target, host.Id)) {
+                    embed = CommandsHelper.createEmbed("Sucessfully joined " + host.DisplayName + "'s tournament!");
+                } else {
+                    CommandsHelper.tourneyController.leave(target.Id, host.Id, false);
+                    embed = CommandsHelper.createEmbed("You're already registered for this tournament!");
+                }
+            } else {
+                embed = CommandsHelper.createEmbed("You're either already registered for this tournament.");
             }
             await ctx.Channel.SendMessageAsync(embed);
         }
@@ -111,7 +148,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
                     return;
                 }
 
-                string targetRoll = team[index].name;
+                string targetRoll = team[index-1].name;
                 string description = "Are you sure you want to reroll " + targetRoll + "?"; 
                 if (this.interactConfirm(ctx, description).Result) {
                     if (!CommandsHelper.playerController.rollSingle(caller, index)) {
@@ -140,8 +177,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
 
             //check if host caller
             if (!CommandsHelper.tourneyController.isHost(ctx.Member, target)) {
-                await CommandsHelper.sendEmbed(ctx.Channel, "You are no tht ehost of the tournament, " + 
-                                        "or the target player is currently not registered in your tournament");
+                await CommandsHelper.sendEmbed(ctx.Channel, "You are not the host of the tournament, ");
                 return;
             }
 
@@ -153,7 +189,10 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
 
             if (index < 0) {
                 // force full team reroll
-                CommandsHelper.playerController.rollSix(target, true);
+                if (!CommandsHelper.playerController.rollSix(target, true)) {
+                    await CommandsHelper.sendEmbed(ctx.Channel, "Player: " + target.DisplayName + " is currently not registered in your tournament.");
+                    return;
+                }
                 await this.team(ctx, target, true);
             } else {
                 if (index < 1 || index > 6 ) {
@@ -161,7 +200,10 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
                     return;
                 }
 
-                CommandsHelper.playerController.rollSingle(target, index, true);
+                if (!CommandsHelper.playerController.rollSingle(target, index, true)) {
+                    await CommandsHelper.sendEmbed(ctx.Channel, "Player: " + target.DisplayName + " is currently not registered in your tournament.");
+                    return;
+                }
                 await this.team(ctx, target, true);
             } 
 
@@ -190,8 +232,14 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
 
             List<Pokemon> team = CommandsHelper.playerController.viewTeam(viewTarget);
 
-            for (int i = 1; i < team.Count; i++) {
-                description += i + ". " + team[i-1].name + "\n";
+            if (team.Count == 0 ) {
+                description = "You currently do not have a team, use .roll to get your first team.";
+            } else if (team.Count != 6) {
+                description = "Unknown error occured. Team rolled did not contain 6 pokemon.";
+            } else {
+                for (int i = 1; i <= team.Count; i++) {
+                    description += i + ". " + team[i-1].name + "\n";
+                }
             }
 
             DiscordEmbedBuilder embed = CommandsHelper.createEmbed(description);
@@ -224,7 +272,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
 
                     if (CommandsHelper.playerController.leaveTournament(caller, target.Id)) {
 
-                        feedback = "Left " + target + "'s tournament successfully.";
+                        feedback = "Left " + target.DisplayName + "'s tournament successfully.";
                     } else {
                         feedback = "You are either not currently a participant of the requested tournament, " +
                                     "or that player is not hosting a tournament.";
@@ -252,7 +300,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
             }
 
             if (CommandsHelper.playerController.switchTournament(ctx.Member, host.Id)) {
-                await CommandsHelper.sendEmbed(ctx.Channel, "Switched current tournament sucessfully/");
+                await CommandsHelper.sendEmbed(ctx.Channel, "Switched current tournament sucessfully.");
             } else {
                 await CommandsHelper.sendEmbed(ctx.Channel, "You are not registered in that tournament.");
             }
@@ -268,16 +316,13 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
             }
 
             TrainerCard tcard = CommandsHelper.playerController.getTrainerCard(ctx.Member);
-            
-            if (tcard.player is null) {
-                await CommandsHelper.sendEmbed(ctx.Channel, "Unknown error occured");
-                return;
-            }
 
             DiscordEmbedBuilder embed = CommandsHelper.createEmbed("");
-            embed.Title = tcard.player.name + "'s Trainer Card";
+            embed.Title = tcard.player is null ? ctx.Member.DisplayName : tcard.player.name;
+            embed.Title += "'s Trainer Card";
+            embed.WithThumbnail(ctx.Member.AvatarUrl);
 
-            if (tcard.host is null) {
+            if (tcard.player is null || tcard.host is null) {
                 embed.AddField("Tournament", "You are currently not in a tournament");
                 await ctx.Channel.SendMessageAsync(embed);
                 return;                
@@ -287,31 +332,38 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.view.discord.commands
 
             string teamDescription = "";
 
-            if (tcard.team is null) {
+            if (tcard.team is null || tcard.team.Count == 0) {
                 teamDescription = "You currently do not have a team";
             } else {
-                foreach (Pokemon i in tcard.team) {
-                    teamDescription += i.name + ", ";
+                for (int i = 0; i < tcard.team.Count; i++) {
+                    if (i == tcard.team.Count() - 1) {
+                        teamDescription += tcard.team[i].name;
+                    } else {
+                        teamDescription += tcard.team[i].name + ", ";
+                    }
                 }
             }
 
             embed.AddField("Team", teamDescription);
 
-            //guarenteed to not be null here
-            embed.AddField("Single Rolls", tcard.singleRolls.ToString());
-            embed.AddField("Team Rolls", tcard.teamRolls.ToString());
-
             // must guarentee 4 elements are in the record
-            if (tcard.record is null || tcard.record.Count != 4) {
+            if (tcard.record.Count != 4) {
                 await CommandsHelper.sendEmbed(ctx.Channel, "Unknown error occured");
                 return; 
             }
 
-            embed.AddField("Record", tcard.record[0] + " W/" + tcard.record[1] + " L/" + 
-                                        tcard.record[2] + " T/" + tcard.record[3] + " UM");
-            
             embed.AddField("Ranking", tcard.ranking.ToString());
-            embed.WithThumbnail(ctx.Member.AvatarUrl);
+
+            if (tcard.record is null) { // could happen sometimes, not too sure why
+                embed.AddField("Record", "There is no one else in this tournament.");
+            } else {
+                embed.AddField("Record", tcard.record[0] + " W/" + tcard.record[1] + " L/" + 
+                                            tcard.record[2] + " T/" + tcard.record[3] + " UM");
+            }
+
+            //guarenteed to not be null here
+            embed.AddField("Single Rolls", tcard.singleRolls.ToString());
+            embed.AddField("Team Rolls", tcard.teamRolls.ToString());
 
             await ctx.Channel.SendMessageAsync(embed);
 
