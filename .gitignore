@@ -1,1 +1,5 @@
 pokemon_rand/src/main/model/utilities/StaticUtil.cs
+pokemon_rand/data
+pokemon_rand/data/players.json
+pokemon_rand/data/tournaments.json
+pokemon_rand/data/pokemon.json
