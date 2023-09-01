@@ -74,7 +74,7 @@ namespace pokemon_rand.src.main.controller
             if (tourneyId == 0 || (!force && curr.teamRolls[tourneyId] <= 0)) {
                 return false;
             } 
-            List<Pokemon> newTeam = pokemonDAO.rollSix(member.Id);
+            List<Pokemon> newTeam = pokemonDAO.rollSix();
             bool result = curr.rollTeam(newTeam, force);
             this.playersFileDAO.save();
             return result;
@@ -98,7 +98,7 @@ namespace pokemon_rand.src.main.controller
                 return false;
             }
             ulong oldId = curr.pokemon[tourneyId][selection-1];
-            Pokemon newMon = pokemonDAO.rollOne(tourneyId, oldId, pokemonDAO.getMany(curr.pokemon[tourneyId]));
+            Pokemon newMon = pokemonDAO.rollOne(oldId, pokemonDAO.getMany(curr.pokemon[tourneyId]));
             bool result = curr.rollSingle(oldId, newMon, force);
             this.playersFileDAO.save();
             return result;

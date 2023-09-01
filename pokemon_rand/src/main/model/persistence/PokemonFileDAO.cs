@@ -68,7 +68,7 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.model.persistence
         /// <returns>
         ///     a list of 6 pokemon, 5 basics, 1 legendary
         /// </returns>
-        public List<Pokemon> rollSix(ulong seed) {
+        public List<Pokemon> rollSix() {
             List<Pokemon> result = new List<Pokemon>();
             Random rand = new Random();
             Pokemon temp;
@@ -103,9 +103,9 @@ namespace pokemon_rand_tourney_bot.pokemon_rand.src.main.model.persistence
         /// <returns>
         ///     The pokemon to replace the old one with
         /// </returns>
-        public Pokemon rollOne(ulong seed, ulong old, List<Pokemon> currTeam) {
+        public Pokemon rollOne(ulong old, List<Pokemon> currTeam) {
             Pokemon result = null;
-            Random rand = new Random((int) seed);
+            Random rand = new Random();
             int max;
             List<Pokemon> list;
 
